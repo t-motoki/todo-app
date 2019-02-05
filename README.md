@@ -16,7 +16,19 @@
    npm install
 ```
 
-
+### ◆DB構造
+  
+* データベース名:todo
+* コレクション名:list
+* データモデル:  
+  ```
+    {
+      priority : 優先度(integer):unique
+      subject  : todoのタイトル(string)
+      detail   : todoの内容(string)
+    }
+  ```
+  
 ### ◆実行
 
 ```npm:command

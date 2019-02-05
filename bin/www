@@ -1,12 +1,23 @@
 #!/usr/bin/env node
+"use strict";
 
 /**
  * Module dependencies.
  */
+const app = require('../app');
+const http = require('http');
 
-var app = require('../app');
-var debug = require('debug')('todo-app:server');
-var http = require('http');
+let cluster = require('cluster');
+const numCPUs = require('os').cpus().length;
+
+const log4js = require('log4js');
+log4js.configure('./log4js.config.json');
+
+//logger
+const systemLogger = log4js.getLogger();
+
+// スケジューリングポリシーをラウンドロビンに設定
+cluster.schedulingPolicy = cluster.SCHED_RR;
 
 /**
  * Get port from environment and store in Express.
@@ -15,24 +26,39 @@ var http = require('http');
 var port = normalizePort(process.env.PORT || '3000');
 app.set('port', port);
 
-/**
- * Create HTTP server.
- */
+if (cluster.isMaster) {
 
-var server = http.createServer(app);
+  // サブプロセスをOSのコア数分生成する
 
-/**
- * Listen on provided port, on all network interfaces.
- */
+  for (let i = 0; i < numCPUs; i++) {
+    cluster.fork();
+  }
 
-server.listen(port);
-server.on('error', onError);
-server.on('listening', onListening);
+  // 落ちた場合、別のサブプロセスを新しく起動
+  cluster.on('exit', function(worker, code, signal) {
+    systemLogger.info('Worker ' + worker.process.pid + ' died.');
+    cluster.fork();
+  });
 
-/**
- * Normalize a port into a number, string, or false.
- */
+  // サブプロセスの起動をログ出力
+  cluster.on('listening', function(worker, address) {
+    systemLogger.info('Worker started with PID ' + worker.process.pid + '.');
+  });
 
+}else{
+
+  // Webサーバ起動
+  var server = http.createServer(app);
+
+  // 指定されたPortで待機
+  server.listen(port);
+  server.on('error', onError);
+  server.on('listening', onListening);
+
+}
+
+
+// ポートを正規化
 function normalizePort(val) {
   var port = parseInt(val, 10);
 
@@ -49,10 +75,7 @@ function normalizePort(val) {
   return false;
 }
 
-/**
- * Event listener for HTTP server "error" event.
- */
-
+// エラー時のイベントリスナー
 function onError(error) {
   if (error.syscall !== 'listen') {
     throw error;
@@ -62,14 +85,14 @@ function onError(error) {
     ? 'Pipe ' + port
     : 'Port ' + port;
 
-  // handle specific listen errors with friendly messages
+  // エラー処理
   switch (error.code) {
     case 'EACCES':
-      console.error(bind + ' requires elevated privileges');
+      systemLogger.error(bind + ' requires elevated privileges');
       process.exit(1);
       break;
     case 'EADDRINUSE':
-      console.error(bind + ' is already in use');
+      systemLogger.error(bind + ' is already in use');
       process.exit(1);
       break;
     default:
@@ -77,14 +100,11 @@ function onError(error) {
   }
 }
 
-/**
- * Event listener for HTTP server "listening" event.
- */
-
+// listen時のイベントリスナー
 function onListening() {
-  var addr = server.address();
-  var bind = typeof addr === 'string'
+  const addr = server.address();
+  const bind = typeof addr === 'string'
     ? 'pipe ' + addr
     : 'port ' + addr.port;
-  debug('Listening on ' + bind);
+    systemLogger.debug('Listening on ' + bind);
 }

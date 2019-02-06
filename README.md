@@ -23,8 +23,7 @@
 * データモデル:  
   ```
     {
-      priority : 優先度(integer):unique
-      subject  : todoのタイトル(string)
+      subject  : todoのタイトル(string):unique
       detail   : todoの内容(string)
     }
   ```

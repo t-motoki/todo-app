@@ -7,9 +7,8 @@ log4js.configure('./log4js.config.json');
 
 const contentType = 'application/json; Accept-Charset=utf-8';
 
-// MongoDB関連
-const MongoClient = require("mongodb").MongoClient;
-const MongoUrl = "mongodb://localhost:27017";
+// db model
+const item = require('../model');
 
 //logger
 const systemLogger = log4js.getLogger();
@@ -18,35 +17,29 @@ const systemLogger = log4js.getLogger();
 router.get('/', function(req, res, next) {
 
   let param = {};
-  MongoClient.connect(MongoUrl, {useNewUrlParser: true}, (error, client) => {
-
-      // コレクションの取得
-      const collection = client.db("todo").collection("list");
-  
-      // コレクションに含まれるドキュメントをすべて取得
-      collection.find({}).toArray((error, items) => {
-
-        param = items
-        res.header('Content-Type', contentType)
-        res.send(param);
-        
-        console.log("error:"+error);
-        console.log(items);
-        for(let item of items){
-          console.log(item.priority);
-          console.log(item.subject);
-          console.log(item.detail);
-        }
-        client.close();
-      });
-  
+  item.find({}, function(err, docs) {
+    if (err) console.error(err.errmsg)
+    param = docs;
+    console.log(param);
+    for(let doc of param){
+      console.log(doc.subject);
+      console.log(doc.detail);
+    }
+    res.header('Content-Type', contentType)
+    res.send(param);
   });
-
 });
 
-// タイトル＋ID一覧取得
-router.get('/title', function(req, res, next) {
+// タイトル一覧取得
+router.get('/subject', function(req, res, next) {
   res.send('respond with a resource');
+});
+
+// todoを取得(タイトル指定)
+router.get('/:subject', function(req, res, next) {
+  let param = {"result":"Hello "+ req.params.subject + " !"}; ;
+  res.header('Content-Type', contentType)
+  res.send(param);
 });
 
 // todo追加
@@ -55,7 +48,7 @@ router.post('/', function(req, res, next) {
 });
 
 //todo更新
-router.put('/', function(req, res, next) {
+router.put('/:subject', function(req, res, next) {
   res.send('respond with a resource');
 });
 

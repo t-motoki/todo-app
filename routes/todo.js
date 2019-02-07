@@ -43,7 +43,7 @@ router.get('/', function(req, res, next) {
   // todo一覧を取得(IDは取得しない)
   let result = JSON.parse(JSON.stringify(result_template));
   systemLogger.debug(`result:${JSON.stringify(result)}`);
-  item.find(query, { _id:0 }, (err, docs) => {
+  item.find(query, { _id:0, __v:0 }, (err, docs) => {
     res.header('Content-Type', contentType)
     if (err){
       result["result"] = 500;

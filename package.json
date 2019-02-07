@@ -1,9 +1,10 @@
 {
   "name": "todo-app",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "private": true,
   "scripts": {
-    "start": "node ./bin/www"
+    "start": "node ./bin/www",
+    "create": "npx aglio -i md/api_spec.md -o public/api_spec.html"
   },
   "dependencies": {
     "cluster": "^0.7.7",

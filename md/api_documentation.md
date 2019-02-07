@@ -95,6 +95,17 @@ FORMAT: 1A
         + result: 600 (number) - 実行結果(0:正常、1以上:エラー)
         + message: 未実装です (string) - エラーメッセージなど
 
+## 全TODOを削除 [/todo/]
+
+### TODOを全件削除する [DELETE]
+
+* 全てのTODOを一括削除
+
++ Response 200 (application/json)
+    + Attributes
+        + result: 600 (number) - 実行結果(0:正常、1以上:エラー)
+        + message: 未実装です (string) - エラーメッセージなど
+
 ## 特定のTODOを削除 [/todo/{subject}]
 
 ### 指定したタイトルのTODOを削除 [DELETE]

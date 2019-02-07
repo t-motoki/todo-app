@@ -42,7 +42,6 @@ router.get('/', function(req, res, next) {
 
   // todo一覧を取得(IDは取得しない)
   let result = JSON.parse(JSON.stringify(result_template));
-  systemLogger.debug(`result:${JSON.stringify(result)}`);
   item.find(query, { _id:0, __v:0 }, (err, docs) => {
     res.header('Content-Type', contentType)
     if (err){
@@ -61,7 +60,21 @@ router.get('/', function(req, res, next) {
 
 // タイトル一覧取得
 router.get('/subject', function(req, res, next) {
-  res.send('respond with a resource');
+
+  let result = JSON.parse(JSON.stringify(result_template));
+  item.distinct("subject", (err, docs) => {
+    res.header('Content-Type', contentType)
+    if (err){
+      result["result"] = 500;
+      result["message"] = err.errmsg;
+      systemLogger.error(err.errmsg);
+    }else{
+      // 正しく取得できた場合に格納
+      result["data"] = JSON.parse(JSON.stringify(docs));
+    }
+    // 結果を返却
+    res.send(result);
+  });
 });
 
 // todoを取得(タイトル指定)

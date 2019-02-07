@@ -43,7 +43,7 @@ router.get('/', (req, res, next) => {
   // todo一覧を取得(IDは取得しない)
   let result = JSON.parse(JSON.stringify(result_template));
   item.find(query, { _id:0, __v:0 }, (err, docs) => {
-    res.header('Content-Type', contentType)
+    res.header('Content-Type', contentType);
     if (err){
       result["result"] = 500;
       result["message"] = err.errmsg;
@@ -63,7 +63,7 @@ router.get('/subject', (req, res, next) =>  {
 
   let result = JSON.parse(JSON.stringify(result_template));
   item.distinct("subject", (err, docs) => {
-    res.header('Content-Type', contentType)
+    res.header('Content-Type', contentType);
     if (err){
       result["result"] = 500;
       result["message"] = err.errmsg;
@@ -87,7 +87,7 @@ router.get('/:subject', (req, res, next) => {
   // todo一覧を取得(IDは取得しない)
   let result = JSON.parse(JSON.stringify(result_template));
   item.findOne(query, { _id:0, __v:0 }, (err, docs) => {
-    res.header('Content-Type', contentType)
+    res.header('Content-Type', contentType);
     if (err){
       result["result"] = 500;
       result["message"] = err.errmsg;
@@ -105,18 +105,34 @@ router.get('/:subject', (req, res, next) => {
 
 // todo追加
 router.post('/', (req, res, next) => {
-  res.send('respond with a resource');
+  let result = JSON.parse(JSON.stringify(result_template));
+  result["result"] = 600;
+  result["message"] = "未実装です";
+  res.send(result);
 });
 
-//todo更新
+// 指定したtodo更新
 router.put('/:subject', (req, res, next) => {
-  res.send('respond with a resource');
+  let result = JSON.parse(JSON.stringify(result_template));
+  result["result"] = 600;
+  result["message"] = "未実装です";
+  res.send(result);
 });
 
-// todo削除
+// todo全件削除
 router.delete('/', (req, res, next) => {
-  res.send('respond with a resource');
+  let result = JSON.parse(JSON.stringify(result_template));
+  result["result"] = 600;
+  result["message"] = "未実装です";
+  res.send(result);
 });
 
+// 指定したtodo削除
+router.delete('/:subject', (req, res, next) => {
+  let result = JSON.parse(JSON.stringify(result_template));
+  result["result"] = 600;
+  result["message"] = "未実装です";
+  res.send(result);
+});
 
 module.exports = router;

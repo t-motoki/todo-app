@@ -23,7 +23,7 @@ RegExp.escape = s => s.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
 
 
 // todo一覧取得
-router.get('/', function(req, res, next) {
+router.get('/', (req, res, next) => {
 
   // クエリの生成(どちらも指定されるとANDとなる)
   let query = {}; // 全検索
@@ -59,7 +59,7 @@ router.get('/', function(req, res, next) {
 });
 
 // タイトル一覧取得
-router.get('/subject', function(req, res, next) {
+router.get('/subject', (req, res, next) =>  {
 
   let result = JSON.parse(JSON.stringify(result_template));
   item.distinct("subject", (err, docs) => {
@@ -77,25 +77,44 @@ router.get('/subject', function(req, res, next) {
   });
 });
 
-// todoを取得(タイトル指定)
-router.get('/:subject', function(req, res, next) {
-  let param = {"result":"Hello "+ req.params.subject + " !"}; ;
-  res.header('Content-Type', contentType)
-  res.send(param);
+// todoを取得(タイトル指定して1件取得)
+router.get('/:subject', (req, res, next) => {
+
+  // クエリの生成
+  let query = {subject:req.params.subject};
+  systemLogger.debug(`query:${JSON.stringify(query)}`);
+
+  // todo一覧を取得(IDは取得しない)
+  let result = JSON.parse(JSON.stringify(result_template));
+  item.findOne(query, { _id:0, __v:0 }, (err, docs) => {
+    res.header('Content-Type', contentType)
+    if (err){
+      result["result"] = 500;
+      result["message"] = err.errmsg;
+      systemLogger.error(err.errmsg);
+    }else{
+      // 正しく取得できた場合に格納
+      result["data"] = JSON.parse(JSON.stringify(docs));
+    }
+    
+    // 結果を返却
+    res.send(result);
+  });
+
 });
 
 // todo追加
-router.post('/', function(req, res, next) {
+router.post('/', (req, res, next) => {
   res.send('respond with a resource');
 });
 
 //todo更新
-router.put('/:subject', function(req, res, next) {
+router.put('/:subject', (req, res, next) => {
   res.send('respond with a resource');
 });
 
 // todo削除
-router.delete('/', function(req, res, next) {
+router.delete('/', (req, res, next) => {
   res.send('respond with a resource');
 });
 

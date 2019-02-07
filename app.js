@@ -11,10 +11,9 @@ const usersRouter = require('./routes/todo');
 
 const app = express();
 
+//logger
 const log4js = require('log4js');
 log4js.configure('./log4js.config.json');
-
-//logger
 const systemLogger = log4js.getLogger();
 const accessLogger = log4js.getLogger('web');
 

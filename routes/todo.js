@@ -59,7 +59,7 @@ router.get('/', (req, res, next) => {
 });
 
 // タイトル一覧取得
-router.get('/subject', (req, res, next) =>  {
+router.get('/subjects', (req, res, next) =>  {
 
   let result = JSON.parse(JSON.stringify(result_template));
   item.distinct("subject", (err, docs) => {

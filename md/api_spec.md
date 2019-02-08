@@ -23,6 +23,21 @@ FORMAT: 1A
                 + subject: 宿題 (string, required) - タイトル
                 + detail: 算数ドリル (string, required) - 内容
 
+
+## Subject List取得 [/todo/subjects]
+
+### タイトル一覧を取得 [GET]
+
+* TODOのタイトルを全件取得する
+
++ Response 200 (application/json)
+    + Attributes
+        + result: 600 (number) - 実行結果(0:正常、1以上:エラー)
+        + message: 未実装です (string) - エラーメッセージなど
+        + data (array) - タイトル一覧
+            + 宿題 (string, optional)
+            + 自習 (string, optional)
+
 ## 特定のTODOを取得 [/todo/{subject}]
 
 ### 指定したタイトルのTODOを取得 [GET]
@@ -39,19 +54,6 @@ FORMAT: 1A
             + subject: 宿題 (string, required) - タイトル
             + detail: 算数ドリル (string, required) - 内容
 
-## Subject List取得 [/todo/subject]
-
-### タイトル一覧を取得 [GET]
-
-* TODOのタイトルを全件取得する
-
-+ Response 200 (application/json)
-    + Attributes
-        + result: 600 (number) - 実行結果(0:正常、1以上:エラー)
-        + message: 未実装です (string) - エラーメッセージなど
-        + data (array) - タイトル一覧
-            + 宿題 (string, optional)
-            + 自習 (string, optional)
 
 ## TODO 追加 [/todo]
 
@@ -95,7 +97,7 @@ FORMAT: 1A
         + result: 600 (number) - 実行結果(0:正常、1以上:エラー)
         + message: 未実装です (string) - エラーメッセージなど
 
-## 全TODOを削除 [/todo/]
+## 全TODOを削除 [/todo]
 
 ### TODOを全件削除する [DELETE]
 

@@ -32,12 +32,12 @@ router.get('/', (req, res) => {
   if("subject" in req.query){
     const subject = RegExp.escape(req.query.subject);
     query["subject"] = new RegExp(subject);
-    querylog["subject"] = `\\/${subject}\\/`;
+    querylog["subject"] = `/${subject}/`;
   }
   if("detail" in req.query){
     const detail = RegExp.escape(req.query.detail);
     query["detail"] = new RegExp(detail);
-    querylog["detail"] = `\\/${detail}\\/`;
+    querylog["detail"] = `/${detail}/`;
   }
   systemLogger.debug(`query:${JSON.stringify(querylog)}`);
 

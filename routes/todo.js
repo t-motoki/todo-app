@@ -40,7 +40,7 @@ router.get('/', (req, res, next) => {
   }
   systemLogger.debug(`query:${JSON.stringify(querylog)}`);
 
-  // todo一覧を取得(IDは取得しない)
+  // todo一覧を取得(IDとバージョンは取得しない)
   let result = JSON.parse(JSON.stringify(result_template));
   item.find(query, { _id:0, __v:0 }, (err, docs) => {
     res.header('Content-Type', contentType);
@@ -84,7 +84,7 @@ router.get('/:subject', (req, res, next) => {
   const query = {subject:req.params.subject};
   systemLogger.debug(`query:${JSON.stringify(query)}`);
 
-  // todo一覧を取得(IDは取得しない)
+  // todoを取得(IDとバージョンは取得しない)
   let result = JSON.parse(JSON.stringify(result_template));
   item.findOne(query, { _id:0, __v:0 }, (err, docs) => {
     res.header('Content-Type', contentType);
@@ -93,8 +93,13 @@ router.get('/:subject', (req, res, next) => {
       result["message"] = err.errmsg;
       systemLogger.error(`result:${result["result"]}, message:${result["message"].replace(/\r?\n/g,'')}`);
     }else{
-      // 正しく取得できた場合に格納
-      result["data"] = JSON.parse(JSON.stringify(docs));
+      if(docs){
+        // 正しく取得できた場合に格納
+        result["data"] = JSON.parse(JSON.stringify(docs));
+      }else{
+        // ない場合は空のオブジェクトを返す
+        result["data"] = {};
+      }
     }
     
     // 結果を返却
@@ -202,10 +207,23 @@ router.delete('/', (req, res, next) => {
 
 // 指定したtodo削除
 router.delete('/:subject', (req, res, next) => {
+
+  // クエリの生成
+  const query = {subject:req.params.subject};
+  systemLogger.debug(`query:${JSON.stringify(query)}`);
+
+  // 1検削除
   let result = JSON.parse(JSON.stringify(result_template));
-  result["result"] = 600;
-  result["message"] = "未実装です";
-  res.send(result);
+  item.remove(query, err => {
+    res.header('Content-Type', contentType);
+    if (err){
+      result["result"] = 500;
+      result["message"] = err.errmsg;
+      systemLogger.error(`result:${result["result"]}, message:${result["message"].replace(/\r?\n/g,'')}`);
+    }
+    // 結果を返却
+    res.send(result);
+  });
 });
 
 module.exports = router;

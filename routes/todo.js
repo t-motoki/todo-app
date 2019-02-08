@@ -18,9 +18,10 @@ const result_template = {
   message:""
 };
 
+/* eslint-disable */
 // 正規表現で問題になる可能性がある文字列をエスケープ処理を実装
-RegExp.escape = s => s.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&');
-
+RegExp.escape = s => s.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+/* eslint-enable */
 
 // todo一覧取得
 router.get('/', (req, res) => {

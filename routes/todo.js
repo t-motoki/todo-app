@@ -16,14 +16,14 @@ const contentType = 'application/json; Accept-Charset=utf-8';
 const result_template = {
   result:0,
   message:""
-}
+};
 
 // 正規表現で問題になる可能性がある文字列をエスケープ処理を実装
-RegExp.escape = s => s.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+RegExp.escape = s => s.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&');
 
 
 // todo一覧取得
-router.get('/', (req, res, next) => {
+router.get('/', (req, res) => {
 
   // クエリの生成(どちらも指定されるとANDとなる)
   let query = {}; // 全検索
@@ -31,12 +31,12 @@ router.get('/', (req, res, next) => {
   if("subject" in req.query){
     const subject = RegExp.escape(req.query.subject);
     query["subject"] = new RegExp(subject);
-    querylog["subject"] = `\/${subject}\/`;
+    querylog["subject"] = `\\/${subject}\\/`;
   }
   if("detail" in req.query){
     const detail = RegExp.escape(req.query.detail);
     query["detail"] = new RegExp(detail);
-    querylog["detail"] = `\/${detail}\/`;
+    querylog["detail"] = `\\/${detail}\\/`;
   }
   systemLogger.debug(`query:${JSON.stringify(querylog)}`);
 
@@ -59,7 +59,7 @@ router.get('/', (req, res, next) => {
 });
 
 // タイトル一覧取得
-router.get('/subjects', (req, res, next) =>  {
+router.get('/subjects', (req, res) =>  {
 
   let result = JSON.parse(JSON.stringify(result_template));
   item.distinct("subject", (err, docs) => {
@@ -78,7 +78,7 @@ router.get('/subjects', (req, res, next) =>  {
 });
 
 // todoを取得(タイトル指定して1件取得)
-router.get('/:subject', (req, res, next) => {
+router.get('/:subject', (req, res) => {
 
   // クエリの生成
   const query = {subject:req.params.subject};
@@ -151,7 +151,7 @@ router.post('/', (req, res, next) => {
     });
   }
 
-}, (req, res, next) => {
+}, (req, res) => {
 
   // 引数が足りていないためエラー
   let result = {
@@ -167,18 +167,18 @@ router.post('/', (req, res, next) => {
 });
 
 // todo更新で引数がない場合にエラーを返す
-router.put('/', (req, res, next) => {
+router.put('/', (req, res) => {
 
-    // 引数が足りていないためエラー
-    let result = {
-        result: 100,
-        message: `subjectが指定されていません。`
-    };
-    systemLogger.error(`result:${result["result"]}, message:${result["message"].replace(/\r?\n/g,'')}`);
-  
-    // エラーを返却
-    res.header('Content-Type', contentType);
-    res.send(result);
+  // 引数が足りていないためエラー
+  let result = {
+    result: 100,
+    message: `subjectが指定されていません。`
+  };
+  systemLogger.error(`result:${result["result"]}, message:${result["message"].replace(/\r?\n/g,'')}`);
+
+  // エラーを返却
+  res.header('Content-Type', contentType);
+  res.send(result);
 });
 
 // 指定したtodo更新
@@ -238,7 +238,7 @@ router.put('/:subject', (req, res, next) => {
       res.send(result);
     });
   }
-}, (req, res, next) => {
+}, (req, res) => {
 
   // 引数が足りていないためエラー
   let result = {
@@ -254,7 +254,7 @@ router.put('/:subject', (req, res, next) => {
 });
 
 // todo全件削除
-router.delete('/', (req, res, next) => {
+router.delete('/', (req, res) => {
 
   let result = JSON.parse(JSON.stringify(result_template));
   item.remove({}, err => {
@@ -270,7 +270,7 @@ router.delete('/', (req, res, next) => {
 });
 
 // 指定したtodo削除
-router.delete('/:subject', (req, res, next) => {
+router.delete('/:subject', (req, res) => {
 
   // クエリの生成
   const query = {subject:req.params.subject};

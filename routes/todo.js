@@ -131,7 +131,7 @@ router.post('/', (req, res, next) => {
     next();
   }else{
     // クエリの生成
-    const query = {subject:req.body["subject"]};
+    const query = {subject:req.body.subject};
     systemLogger.debug(`query:${JSON.stringify(query)}`);
 
     // 登録データの作成
@@ -183,10 +183,74 @@ router.put('/', (req, res, next) => {
 
 // 指定したtodo更新
 router.put('/:subject', (req, res, next) => {
-  let result = JSON.parse(JSON.stringify(result_template));
-  result["result"] = 600;
-  result["message"] = "未実装です";
+
+
+  // 引数が揃っていることを確認
+  let check = false;
+  if(!("subject" in req.body)){
+    if(!("detail" in req.body)){
+      res["errorfactor"] = "subject & detail";
+    }else{
+      res["errorfactor"] = "subject";
+    }
+  }else if(!("detail" in req.body)){
+    res["errorfactor"] = "detail";
+  }else{
+    // 問題なし
+    check = true;
+  }
+
+  if(!check){
+    // エラー処理
+    next();
+  }else{
+    // クエリの生成
+    const query = {subject:req.params.subject};
+    systemLogger.debug(`query:${JSON.stringify(query)}`);
+
+    // 登録データの作成
+    const register = {subject:req.body["subject"],detail:req.body["detail"]};
+    systemLogger.debug(`register data:${JSON.stringify(register)}`);
+
+    // 登録処理(無ければ追加、あれば更新)
+    let result = JSON.parse(JSON.stringify(result_template));
+    item.updateOne( query, register, (err, docs) => {
+      res.header('Content-Type', contentType);
+      if (err){
+        if(err.code === 11000){
+          // 既に存在しているタイトルに変更しようとした
+          result["result"] = 200;
+        }else{
+          // その他実行エラー
+          result["result"] = 500;
+        }
+        result["message"] = err.errmsg;
+        systemLogger.error(`result: , message:${(err.errmsg).replace(/\r?\n/g,'')}`);
+      }
+
+      // DBに存在していないタイトルが更新対象に指定された
+      if(docs.n === 0){
+        result["result"] = 300;
+        result["message"] = `subject:${req.params.subject}はデータベースに存在しません`;
+        systemLogger.error(`result: , message:${result["message"].replace(/\r?\n/g,'')}`);
+      }
+
+      res.send(result);
+    });
+  }
+}, (req, res, next) => {
+
+  // 引数が足りていないためエラー
+  let result = {
+    result: 100,
+    message: `更新データの${res["errorfactor"]}が指定されていません。`
+  };
+  systemLogger.error(`result:${result["result"]}, message:${result["message"].replace(/\r?\n/g,'')}`);
+
+  // エラーを返却
+  res.header('Content-Type', contentType);
   res.send(result);
+
 });
 
 // todo全件削除

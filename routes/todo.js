@@ -149,15 +149,31 @@ router.post('/', (req, res, next) => {
 }, (req, res, next) => {
 
   // 引数が足りていないためエラー
-  let result = JSON.parse(JSON.stringify(result_template));
-  result["result"] = 100;
-  result["message"] = `${res["errorfactor"]}が指定されていません。`;
+  let result = {
+    result: 100,
+    message: `${res["errorfactor"]}が指定されていません。`
+  };
   systemLogger.error(`result:${result["result"]}, message:${result["message"].replace(/\r?\n/g,'')}`);
 
   // エラーを返却
   res.header('Content-Type', contentType);
   res.send(result);
 
+});
+
+// todo更新で引数がない場合にエラーを返す
+router.put('/', (req, res, next) => {
+
+    // 引数が足りていないためエラー
+    let result = {
+        result: 100,
+        message: `subjectが指定されていません。`
+    };
+    systemLogger.error(`result:${result["result"]}, message:${result["message"].replace(/\r?\n/g,'')}`);
+  
+    // エラーを返却
+    res.header('Content-Type', contentType);
+    res.send(result);
 });
 
 // 指定したtodo更新

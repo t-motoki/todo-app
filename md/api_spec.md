@@ -63,13 +63,14 @@ FORMAT: 1A
 
 * 指定された値で新規にTODOを追加する
 * 既に存在しているタイトルが指定された場合、上書き保存する
+* リクエストBodyにsubjectかdetail、もしくはどちらも指定がない場合はエラーを返す(100)
 
 + Request (application/json)
     + Headers
         Accept: application/json
     + Attributes
         + subject: 宿題 (string, required) - タイトル
-        + detail: 算数ドリル (string, required) - 内容
+        + : 算数ドリル (string, required) - 内容
 
 + Response 200 (application/json)
     + Attributes
@@ -81,7 +82,8 @@ FORMAT: 1A
 #### 指定されたTODOを1件更新 [PUT]
 
 * 指定されたタイトルに該当するTODOを更新する
-* 更新後のタイトルが既に存在しているタイトルの場合、エラーを返す(100)
+* URLパラメータにsubjectがない場合はエラーを返す(100)
+* 更新後のタイトルが既に存在しているタイトルの場合、エラーを返す(200)
 * ただし、更新前後のタイトルが同じ場合はエラーとせず更新する
 
 + Parameters 

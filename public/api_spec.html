@@ -143,10 +143,13 @@
 <li>
 <p>既に存在しているタイトルが指定された場合、上書き保存する</p>
 </li>
+<li>
+<p>リクエストBodyにsubjectかdetail、もしくはどちらも指定がない場合はエラーを返す(100)</p>
+</li>
 </ul>
 <h4>Example URI</h4><div class="definition"><span class="method post">POST</span>&nbsp;<span class="uri"><span class="hostname"></span>/todo</span></div><div class="title"><strong>Request</strong><div class="collapse-button"><span class="close">Hide</span><span class="open">Show</span></div></div><div class="collapse-content"><div class="inner"><h5>Headers</h5><pre><code><span class="hljs-attribute">Content-Type</span>: <span class="hljs-string">application/json</span><br><span class="hljs-attribute">Accept</span>: <span class="hljs-string">application/json</span></code></pre><div style="height: 1px;"></div><h5>Body</h5><pre><code>{
   "<span class="hljs-attribute">subject</span>": <span class="hljs-value"><span class="hljs-string">"宿題"</span></span>,
-  "<span class="hljs-attribute">detail</span>": <span class="hljs-value"><span class="hljs-string">"算数ドリル"</span>
+  "<span class="hljs-attribute">undefined</span>": <span class="hljs-value"><span class="hljs-string">"算数ドリル"</span>
 </span>}</code></pre><div style="height: 1px;"></div><h5>Schema</h5><pre><code>{
   "<span class="hljs-attribute">$schema</span>": <span class="hljs-value"><span class="hljs-string">"http://json-schema.org/draft-04/schema#"</span></span>,
   "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"object"</span></span>,
@@ -155,14 +158,14 @@
       "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span></span>,
       "<span class="hljs-attribute">description</span>": <span class="hljs-value"><span class="hljs-string">"タイトル"</span>
     </span>}</span>,
-    "<span class="hljs-attribute">detail</span>": <span class="hljs-value">{
+    "<span class="hljs-attribute"></span>": <span class="hljs-value">{
       "<span class="hljs-attribute">type</span>": <span class="hljs-value"><span class="hljs-string">"string"</span></span>,
       "<span class="hljs-attribute">description</span>": <span class="hljs-value"><span class="hljs-string">"内容"</span>
     </span>}
   </span>}</span>,
   "<span class="hljs-attribute">required</span>": <span class="hljs-value">[
     <span class="hljs-string">"subject"</span>,
-    <span class="hljs-string">"detail"</span>
+    <span class="hljs-string">""</span>
   ]
 </span>}</code></pre><div style="height: 1px;"></div></div></div><div class="title"><strong>Response&nbsp;&nbsp;<code>200</code></strong><div class="collapse-button"><span class="close">Hide</span><span class="open">Show</span></div></div><div class="collapse-content"><div class="inner"><h5>Headers</h5><pre><code><span class="hljs-attribute">Content-Type</span>: <span class="hljs-string">application/json</span></code></pre><div style="height: 1px;"></div><h5>Body</h5><pre><code>{
   "<span class="hljs-attribute">result</span>": <span class="hljs-value"><span class="hljs-number">600</span></span>,
@@ -189,7 +192,10 @@
 <p>指定されたタイトルに該当するTODOを更新する</p>
 </li>
 <li>
-<p>更新後のタイトルが既に存在しているタイトルの場合、エラーを返す(100)</p>
+<p>URLパラメータにsubjectがない場合はエラーを返す(100)</p>
+</li>
+<li>
+<p>更新後のタイトルが既に存在しているタイトルの場合、エラーを返す(200)</p>
 </li>
 <li>
 <p>ただし、更新前後のタイトルが同じ場合はエラーとせず更新する</p>
@@ -342,7 +348,7 @@
   "<span class="hljs-attribute">list</span>": <span class="hljs-value">[
     {
       "<span class="hljs-attribute">number</span>": <span class="hljs-value"><span class="hljs-number">500</span></span>,
-      "<span class="hljs-attribute">summary</span>": <span class="hljs-value"><span class="hljs-string">"/todo"</span>
+      "<span class="hljs-attribute">summary</span>": <span class="hljs-value"><span class="hljs-string">"データベース実行エラー"</span>
     </span>}
   ]
 </span>}</code></pre><div style="height: 1px;"></div><h5>Schema</h5><pre><code>{

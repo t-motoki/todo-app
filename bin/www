@@ -35,13 +35,13 @@ if (cluster.isMaster) {
   }
 
   // 落ちた場合、別のサブプロセスを新しく起動
-  cluster.on('exit', function(worker, code, signal) {
+  cluster.on('exit', function(worker) {
     systemLogger.info('Worker ' + worker.process.pid + ' died.');
     cluster.fork();
   });
 
   // サブプロセスの起動をログ出力
-  cluster.on('listening', function(worker, address) {
+  cluster.on('listening', function(worker) {
     systemLogger.info('Worker started with PID ' + worker.process.pid + '.');
   });
 
@@ -81,22 +81,22 @@ function onError(error) {
     throw error;
   }
 
-  var bind = typeof port === 'string'
+  const bind = typeof port === 'string'
     ? 'Pipe ' + port
     : 'Port ' + port;
 
   // エラー処理
   switch (error.code) {
-    case 'EACCES':
-      systemLogger.error(bind + ' requires elevated privileges');
-      process.exit(1);
-      break;
-    case 'EADDRINUSE':
-      systemLogger.error(bind + ' is already in use');
-      process.exit(1);
-      break;
-    default:
-      throw error;
+  case 'EACCES':
+    systemLogger.error(bind + ' requires elevated privileges');
+    process.exit(1);
+    break;
+  case 'EADDRINUSE':
+    systemLogger.error(bind + ' is already in use');
+    process.exit(1);
+    break;
+  default:
+    throw error;
   }
 }
 
@@ -106,5 +106,5 @@ function onListening() {
   const bind = typeof addr === 'string'
     ? 'pipe ' + addr
     : 'port ' + addr.port;
-    systemLogger.debug('Listening on ' + bind);
+  systemLogger.debug('Listening on ' + bind);
 }

@@ -186,10 +186,18 @@ router.put('/:subject', (req, res, next) => {
 
 // todo全件削除
 router.delete('/', (req, res, next) => {
+
   let result = JSON.parse(JSON.stringify(result_template));
-  result["result"] = 600;
-  result["message"] = "未実装です";
-  res.send(result);
+  item.remove({}, err => {
+    res.header('Content-Type', contentType);
+    if (err){
+      result["result"] = 500;
+      result["message"] = err.errmsg;
+      systemLogger.error(`result:${result["result"]}, message:${result["message"].replace(/\r?\n/g,'')}`);
+    }
+    // 結果を返却
+    res.send(result);
+  });
 });
 
 // 指定したtodo削除

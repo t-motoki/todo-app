@@ -47,7 +47,7 @@ router.get('/', (req, res, next) => {
     if (err){
       result["result"] = 500;
       result["message"] = err.errmsg;
-      systemLogger.error(err.errmsg);
+      systemLogger.error(`result:${result["result"]}, message:${result["message"].replace(/\r?\n/g,'')}`);
     }else{
       // 正しく取得できた場合に格納
       result["data"] = JSON.parse(JSON.stringify(docs));
@@ -67,7 +67,7 @@ router.get('/subject', (req, res, next) =>  {
     if (err){
       result["result"] = 500;
       result["message"] = err.errmsg;
-      systemLogger.error(err.errmsg);
+      systemLogger.error(`result:${result["result"]}, message:${result["message"].replace(/\r?\n/g,'')}`);
     }else{
       // 正しく取得できた場合に格納
       result["data"] = JSON.parse(JSON.stringify(docs));
@@ -81,7 +81,7 @@ router.get('/subject', (req, res, next) =>  {
 router.get('/:subject', (req, res, next) => {
 
   // クエリの生成
-  let query = {subject:req.params.subject};
+  const query = {subject:req.params.subject};
   systemLogger.debug(`query:${JSON.stringify(query)}`);
 
   // todo一覧を取得(IDは取得しない)
@@ -91,7 +91,7 @@ router.get('/:subject', (req, res, next) => {
     if (err){
       result["result"] = 500;
       result["message"] = err.errmsg;
-      systemLogger.error(err.errmsg);
+      systemLogger.error(`result:${result["result"]}, message:${result["message"].replace(/\r?\n/g,'')}`);
     }else{
       // 正しく取得できた場合に格納
       result["data"] = JSON.parse(JSON.stringify(docs));
@@ -105,10 +105,59 @@ router.get('/:subject', (req, res, next) => {
 
 // todo追加
 router.post('/', (req, res, next) => {
+
+  // 引数が揃っていることを確認
+  let check = false;
+  if(!("subject" in req.body)){
+    if(!("detail" in req.body)){
+      res["errorfactor"] = "subject & detail";
+    }else{
+      res["errorfactor"] = "subject";
+    }
+  }else if(!("detail" in req.body)){
+    res["errorfactor"] = "detail";
+  }else{
+    // 問題なし
+    check = true;
+  }
+
+  if(!check){
+    // エラー処理
+    next();
+  }else{
+    // クエリの生成
+    const query = {subject:req.body["subject"]};
+    systemLogger.debug(`query:${JSON.stringify(query)}`);
+
+    // 登録データの作成
+    const register = {subject:req.body["subject"],detail:req.body["detail"]};
+    systemLogger.debug(`register data:${JSON.stringify(register)}`);
+
+    // 登録処理(無ければ追加、あれば更新)
+    let result = JSON.parse(JSON.stringify(result_template));
+    item.updateOne( query, register, {upsert: true}, err => {
+      res.header('Content-Type', contentType);
+      if (err){
+        result["result"] = 500;
+        result["message"] = err.errmsg;
+        systemLogger.error(`result: , message:${(err.errmsg).replace(/\r?\n/g,'')}`);
+      } 
+      res.send(result);
+    });
+  }
+
+}, (req, res, next) => {
+
+  // 引数が足りていないためエラー
   let result = JSON.parse(JSON.stringify(result_template));
-  result["result"] = 600;
-  result["message"] = "未実装です";
+  result["result"] = 100;
+  result["message"] = `${res["errorfactor"]}が指定されていません。`;
+  systemLogger.error(`result:${result["result"]}, message:${result["message"].replace(/\r?\n/g,'')}`);
+
+  // エラーを返却
+  res.header('Content-Type', contentType);
   res.send(result);
+
 });
 
 // 指定したtodo更新

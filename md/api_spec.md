@@ -29,11 +29,15 @@ FORMAT: 1A
                 + detail: 算数ドリル (string, required) - 内容
 
 
-### Subject List取得 [/todo/subjects]
+### Subject List取得 [/todo/subjects{?done}]
 
 #### タイトル一覧を取得 [GET]
 
 * TODOのタイトルを全件取得する
+* パラメータにdoneがある場合、絞り込んで返却
+
++ Parameters 
+    + done: false (boolean) - 完了かどうか(false:未完、true:完了)
 
 + Response 200 (application/json)
     + Attributes

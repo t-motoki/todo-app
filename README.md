@@ -10,7 +10,7 @@
 * Node.js v8.12.0  
 * mongodb v4.0  
   
-利用時は下記コマンドでインストールしてください。
+利用時は下記コマンドでインストールしてください。  
   
 ```npm:command
    npm install
@@ -23,8 +23,9 @@
 * データモデル:  
   ```
     {
-      subject  : todoのタイトル(string):unique
-      detail   : todoの内容(string)
+      done    : todoが完了したかどうか(boolean)(false:未完、true:完了)
+      subject : todoのタイトル(string):unique
+      detail  : todoの内容(string)
     }
   ```
   

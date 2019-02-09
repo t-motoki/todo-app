@@ -4,24 +4,27 @@ FORMAT: 1A
 
 ## Group Todo List API
 
-### TODO List取得 [/todo{?subject,detail}]
+### TODO List取得 [/todo{?done,subject,detail}]
 
 #### 検索して取得 [GET]
 
-* パラメータの指定がない場合、すべてのTODO一覧を返却。
-* subjectのみ指定された場合、その文字列が含む一覧を返却。
-* detailのみ指定された場合、その文字列が含む一覧を返却。
-* subjectとdetailが指定された場合、どちらも含む一覧を返却。
+* パラメータの指定がない場合、すべてのTODO一覧を返却
+* doneのみ指定された場合、条件に一致する一覧を返却
+* subjectのみ指定された場合、その文字列が含む一覧を返却
+* detailのみ指定された場合、その文字列が含む一覧を返却
+* 複数条件が指定された場合、AND検索して条件に一致した一覧を返却
 
-+ Parameters 
-    + subject: 宿題 (string, optional) - タイトル
-    + detail: 算数ドリル (string, optional) - 内容
++ Parameters
+    + done: false (boolean) - 完了かどうか(false:未完、true:完了)
+    + subject: 宿題 (string) - タイトル
+    + detail: 算数ドリル (string) - 内容
 + Response 200 (application/json)
     + Attributes
         + result: 600 (number, required) - 実行結果(0:正常、1以上:エラー)
         + message: 未実装です (string, required) - エラーメッセージなど
         + data (array[object], fixed-type)
             + (object)
+                + done: false (boolean, required) - 完了かどうか(false:未完、true:完了)
                 + subject: 宿題 (string, required) - タイトル
                 + detail: 算数ドリル (string, required) - 内容
 
@@ -53,6 +56,7 @@ FORMAT: 1A
         + result: 600 (number, required) - 実行結果(0:正常、1以上:エラー)
         + message: 未実装です (string, required) - エラーメッセージなど
         + data (object)
+            + done: false (boolean, required) - 完了かどうか(false:未完、true:完了)
             + subject: 宿題 (string, required) - タイトル
             + detail: 算数ドリル (string, required) - 内容
 
@@ -64,13 +68,15 @@ FORMAT: 1A
 * 指定された値で新規にTODOを追加する
 * 既に存在しているタイトルが指定された場合、上書き保存する
 * リクエストBodyにsubjectかdetail、もしくはどちらも指定がない場合はエラーを返す(100)
+* リクエストBodyにdoneがなければ「false」を追加する
 
 + Request (application/json)
     + Headers
         Accept: application/json
     + Attributes
+        + done: false (boolean) - 完了かどうか(false:未完、true:完了)
         + subject: 宿題 (string, required) - タイトル
-        + : 算数ドリル (string, required) - 内容
+        + detail: 算数ドリル (string, required) - 内容
 
 + Response 200 (application/json)
     + Attributes
@@ -82,8 +88,9 @@ FORMAT: 1A
 #### 指定されたTODOを1件更新 [PUT]
 
 * 指定されたタイトルに該当するTODOを更新する
+* リクエストBodyにある項目のみ更新する(done、subject、detailのいずれか、もしくは複数)
 * URLパラメータにsubjectがない場合はエラーを返す(100)
-* リクエストBodyにsubjectかdetail、もしくはどちらも指定がない場合はエラーを返す(100)
+* リクエストBodyに対象のパラメータが何も指定されてなかったらエラーを返す(100)
 * 更新後のタイトルが既に存在しているタイトルの場合、エラーを返す(200)
 * ただし、更新前後のタイトルが同じ場合はエラーとせず更新する
 
@@ -94,6 +101,7 @@ FORMAT: 1A
     + Headers
             Accept: application/json
     + Attributes
+        + done: false (boolean) - 完了かどうか(false:未完、true:完了)
         + subject: 宿題 (string, required) - タイトル
         + detail: 漢字ドリルP10～11 (string, required) - 内容
 
@@ -102,11 +110,21 @@ FORMAT: 1A
         + result: 600 (number, required) - 実行結果(0:正常、1以上:エラー)
         + message: 未実装です (string, required) - エラーメッセージなど
 
-### 全TODOを削除 [/todo]
+### TODO複数削除 [/todo{?done,subject,detail}]
 
-#### TODOを全件削除する [DELETE]
+#### TODOを複数件削除する [DELETE]
 
-* 全てのTODOを一括削除
+* パラメータに指定がない場合は全件削除
+* パラメータの指定がない場合、すべてのTODO一覧を削除
+* doneのみ指定された場合、条件に一致する一覧を削除
+* subjectのみ指定された場合、その文字列が含む一覧を削除
+* detailのみ指定された場合、その文字列が含む一覧を削除
+* 複数条件が指定された場合、AND検索して条件に一致した一覧を削除
+
++ Parameters
+    + done: false (boolean) - 完了かどうか(false:未完、true:完了)
+    + subject: 宿題 (string) - タイトル
+    + detail: 算数ドリル (string) - 内容
 
 + Response 200 (application/json)
     + Attributes

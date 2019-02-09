@@ -7,6 +7,7 @@ const Schema = mongoose.Schema;
 
 // Todoデータのスキーマを定義
 const Item = new Schema({
+  done: { type: Boolean, required: true },
   subject: { type: String, required: true, unique: true },
   detail : { type: String, required: true }
 });

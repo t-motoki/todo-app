@@ -4,9 +4,9 @@ FORMAT: 1A
 
 ## Group Todo List API
 
-### TODO List取得 [/todo{?done,subject,detail}]
+### TODO一覧取得 [/todo{?done,subject,detail}]
 
-#### 検索して取得 [GET]
+#### TODO一覧取得 [GET]
 
 * TODOの内容全てを一覧で返却する
 * パラメータの指定がない場合、すべての一覧を返却
@@ -30,11 +30,11 @@ FORMAT: 1A
                 + detail: 算数ドリル (string, required) - 内容
 
 
-### Subject List取得 [/todo/subjects{?done,subject,detail}]
+### TODOタイトル一覧取得 [/todo/subjects{?done,subject,detail}]
 
-#### タイトル一覧を取得 [GET]
+#### TODOタイトル一覧取得 [GET]
 
-* TODOのタイトルを一覧で返却する
+* TODOのタイトルのみ、一覧で返却する
 * パラメータの指定がない場合、すべての一覧を返却
 * doneのみ指定された場合、条件に一致する一覧を返却
 * subjectのみ指定された場合、その文字列が含む一覧を返却
@@ -54,9 +54,9 @@ FORMAT: 1A
             + 宿題 (string)
             + 自習 (string)
 
-### 特定のTODOを取得 [/todo/{subject}]
+### TODO1件取得 [/todo/{subject}]
 
-#### 指定したタイトルのTODOを取得 [GET]
+#### TODO1件取得 [GET]
 
 * 指定したタイトルに一致するTODOを返却
 
@@ -72,11 +72,11 @@ FORMAT: 1A
             + detail: 算数ドリル (string, required) - 内容
 
 
-### TODO 追加 [/todo]
+### TODO追加 [/todo]
 
-#### TODOを1件追加 [POST]
+#### TODO追加 [POST]
 
-* 指定された値で新規にTODOを追加する
+* 指定された値で新規にTODOを1件追加する
 * 既に存在しているタイトルが指定された場合、上書き保存する
 * リクエストBodyにsubjectかdetail、もしくはどちらも指定がない場合はエラーを返す(100)
 * リクエストBodyにdoneがなければ「false」を追加する
@@ -95,11 +95,11 @@ FORMAT: 1A
         + result: 600 (number, required) - 実行結果(0:正常、1以上:エラー)
         + message: 未実装です (string, required) - エラーメッセージなど
 
-### TODO 更新 [/todo/{subject}]
+### TODO更新 [/todo/{subject}]
 
-#### 指定されたTODOを1件更新 [PUT]
+#### TODO更新 [PUT]
 
-* 指定されたタイトルに該当するTODOを更新する
+* 指定されたタイトルに該当するTODOを1件更新する
 * リクエストBodyにある項目のみ更新する(done、subject、detailのいずれか、もしくは複数)
 * URLパラメータにsubjectがない場合はエラーを返す(100)
 * リクエストBodyに対象のパラメータが何も指定されてなかったらエラーを返す(100)
@@ -124,7 +124,7 @@ FORMAT: 1A
 
 ### TODO複数削除 [/todo{?done,subject,detail}]
 
-#### TODOを複数件削除する [DELETE]
+#### TODO複数削除 [DELETE]
 
 * パラメータに指定がない場合は全件削除
 * パラメータの指定がない場合、すべてのTODO一覧を削除
@@ -143,9 +143,9 @@ FORMAT: 1A
         + result: 600 (number, required) - 実行結果(0:正常、1以上:エラー)
         + message: 未実装です (string, required) - エラーメッセージなど
 
-### 特定のTODOを削除 [/todo/{subject}]
+### TODO1件削除 [/todo/{subject}]
 
-#### 指定したタイトルのTODOを削除 [DELETE]
+#### TODO1件削除 [DELETE]
 
 * 指定したタイトルに一致するTODOを削除
 
@@ -159,11 +159,11 @@ FORMAT: 1A
 
 ## Group Support API
 
-### API一覧取得 [/api]
+### API概要一覧取得 [/api]
 
-#### APIのエンドポイントと概要を取得 [GET]
+#### API概要一覧取得 [GET]
 
-* 「TODO List REST-API」のAPI一覧を取得できる
+* 本APIのエンドポイントと概要の一覧を取得できる
 
 + Response 200 (application/json)
     + Attributes
@@ -175,7 +175,7 @@ FORMAT: 1A
 
 ### API仕様書表示 [/api/spec]
 
-#### API仕様書を取得する [GET]
+#### API仕様書表示 [GET]
 
 * ブラウザからリクエストする前提
 * API仕様書のWebページに転送する
@@ -183,9 +183,9 @@ FORMAT: 1A
 + Response 302 (text/html)
 
 
-### エラー一覧取得 [/api/error]
+### エラー内容一覧取得 [/api/error]
 
-#### エラー番号と概要一覧を取得 [GET]
+#### エラー内容一覧取得 [GET]
 
 * 本APIにて発行するエラー番号とその概要一覧を取得できる
 

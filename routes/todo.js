@@ -47,7 +47,8 @@ router.get('/', (req, res) => {
     res.header('Content-Type', contentType);
     if (err){
       result["result"] = 500;
-      result["message"] = JSON.stringify(err);
+      result["message"] = "データベース実行時にエラーが発生しました。詳細 => ";
+      result["message"] += JSON.stringify(err);
       systemLogger.error(`result:${result["result"]}, message:${result["message"].replace(/\r?\n/g,'')}`);
     }else{
       // 正しく取得できた場合に格納
@@ -67,7 +68,8 @@ router.get('/subjects', (req, res) =>  {
     res.header('Content-Type', contentType);
     if (err){
       result["result"] = 500;
-      result["message"] = JSON.stringify(err);
+      result["message"] = "データベース実行時にエラーが発生しました。詳細 => ";
+      result["message"] += JSON.stringify(err);
       systemLogger.error(`result:${result["result"]}, message:${result["message"].replace(/\r?\n/g,'')}`);
     }else{
       // 正しく取得できた場合に格納
@@ -91,7 +93,8 @@ router.get('/:subject', (req, res) => {
     res.header('Content-Type', contentType);
     if (err){
       result["result"] = 500;
-      result["message"] = JSON.stringify(err);
+      result["message"] = "データベース実行時にエラーが発生しました。詳細 => ";
+      result["message"] += JSON.stringify(err);
       systemLogger.error(`result:${result["result"]}, message:${result["message"].replace(/\r?\n/g,'')}`);
     }else{
       if(docs){
@@ -150,12 +153,13 @@ router.post('/', (req, res, next) => {
       res.header('Content-Type', contentType);
       if (err){
         if(err.name === "CastError"){
-          // 不正な文字列だった場合、キャストエラーとなる
+          // doneが不正な文字列だった場合、キャストエラーとなる
           result["result"] = 100;
         }else{
           result["result"] = 500;
+          result["message"] = "データベース実行時にエラーが発生しました。詳細 => ";
         }
-        result["message"] = JSON.stringify(err);
+        result["message"] += JSON.stringify(err);
         systemLogger.error(`result: , message:${result["message"].replace(/\r?\n/g,'')}`);
       } 
       res.send(result);
@@ -183,7 +187,7 @@ router.put('/', (req, res) => {
   // 引数が足りていないためエラー
   let result = {
     result: 100,
-    message: `subjectが指定されていません。`
+    message: `更新対象となる元のsubjectが指定されていません。`
   };
   systemLogger.error(`result:${result["result"]}, message:${result["message"].replace(/\r?\n/g,'')}`);
 
@@ -195,32 +199,27 @@ router.put('/', (req, res) => {
 // 指定したtodo更新
 router.put('/:subject', (req, res, next) => {
 
-
-  // 引数が揃っていることを確認
-  let check = false;
-  if(!("subject" in req.body)){
-    if(!("detail" in req.body)){
-      res["errorfactor"] = "subject & detail";
-    }else{
-      res["errorfactor"] = "subject";
-    }
-  }else if(!("detail" in req.body)){
-    res["errorfactor"] = "detail";
-  }else{
-    // 問題なし
-    check = true;
+  // 登録データの作成
+  let register = {};
+  if("subject" in req.body){
+    register["subject"] = req.body["subject"];
+  }
+  if("detail" in req.body){
+    register["detail"] = req.body["detail"];
+  }
+  if("done" in req.body){
+    register["done"] = req.body["done"];
   }
 
-  if(!check){
-    // エラー処理
+  if(!Object.keys(register).length){  
+    // 何も指定されていなければエラー
     next();
   }else{
     // クエリの生成
     const query = {subject:req.params.subject};
     systemLogger.debug(`query:${JSON.stringify(query)}`);
 
-    // 登録データの作成
-    const register = {subject:req.body["subject"],detail:req.body["detail"]};
+    // 登録データをログ出力
     systemLogger.debug(`register data:${JSON.stringify(register)}`);
 
     // 登録処理(無ければ追加、あれば更新)
@@ -228,24 +227,29 @@ router.put('/:subject', (req, res, next) => {
     item.updateOne( query, register, (err, docs) => {
       res.header('Content-Type', contentType);
       if (err){
-        if(err.code === 11000){
+        if(err.name === "CastError"){
+          // 不正な文字列だった場合、キャストエラーとなる
+          result["result"] = 100;
+          result["message"] = "doneにその文字列は使えません。詳細 => ";
+        }else if(err.code === 11000){
           // 既に存在しているタイトルに変更しようとした
           result["result"] = 200;
+          result["message"] = "変更後に指定されたsubjectは、別に存在しています。詳細 => ";
         }else{
           // その他実行エラー
           result["result"] = 500;
+          result["message"] = "データベース実行時にエラーが発生しました。詳細 => ";
         }
-        result["message"] = JSON.stringify(err);
-        systemLogger.error(`result: , message:${(err.errmsg).replace(/\r?\n/g,'')}`);
-      }
-
-      // DBに存在していないタイトルが更新対象に指定された
-      if(docs.n === 0){
-        result["result"] = 300;
-        result["message"] = `subject:${req.params.subject}はデータベースに存在しません`;
+        result["message"] += JSON.stringify(err);
         systemLogger.error(`result: , message:${result["message"].replace(/\r?\n/g,'')}`);
+      }else{
+        // DBに存在していないタイトルが更新対象に指定された
+        if(docs.n === 0){
+          result["result"] = 300;
+          result["message"] = `更新対象subject:"${req.params.subject}"はデータベースに存在しません`;
+          systemLogger.error(`result: , message:${result["message"].replace(/\r?\n/g,'')}`);
+        }
       }
-
       res.send(result);
     });
   }
@@ -254,9 +258,9 @@ router.put('/:subject', (req, res, next) => {
   // 引数が足りていないためエラー
   let result = {
     result: 100,
-    message: `更新データの${res["errorfactor"]}が指定されていません。`
+    message: `有効な更新データが1つも指定されていません。`
   };
-  systemLogger.error(`result:${result["result"]}, message:${result["message"].replace(/\r?\n/g,'')}`);
+  systemLogger.error(`result:${result["result"]}, message:${result["message"]}`);
 
   // エラーを返却
   res.header('Content-Type', contentType);
@@ -272,7 +276,8 @@ router.delete('/', (req, res) => {
     res.header('Content-Type', contentType);
     if (err){
       result["result"] = 500;
-      result["message"] = err.errmsg;
+      result["message"] = "データベース実行時にエラーが発生しました。詳細 => ";
+      result["message"] += JSON.stringify(err);
       systemLogger.error(`result:${result["result"]}, message:${result["message"].replace(/\r?\n/g,'')}`);
     }
     // 結果を返却
@@ -293,7 +298,8 @@ router.delete('/:subject', (req, res) => {
     res.header('Content-Type', contentType);
     if (err){
       result["result"] = 500;
-      result["message"] = err.errmsg;
+      result["message"] = "データベース実行時にエラーが発生しました。詳細 => ";
+      result["message"] += JSON.stringify(err);
       systemLogger.error(`result:${result["result"]}, message:${result["message"].replace(/\r?\n/g,'')}`);
     }
     // 結果を返却

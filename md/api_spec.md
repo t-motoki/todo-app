@@ -8,7 +8,8 @@ FORMAT: 1A
 
 #### 検索して取得 [GET]
 
-* パラメータの指定がない場合、すべてのTODO一覧を返却
+* TODOの内容全てを一覧で返却する
+* パラメータの指定がない場合、すべての一覧を返却
 * doneのみ指定された場合、条件に一致する一覧を返却
 * subjectのみ指定された場合、その文字列が含む一覧を返却
 * detailのみ指定された場合、その文字列が含む一覧を返却
@@ -29,15 +30,21 @@ FORMAT: 1A
                 + detail: 算数ドリル (string, required) - 内容
 
 
-### Subject List取得 [/todo/subjects{?done}]
+### Subject List取得 [/todo/subjects{?done,subject,detail}]
 
 #### タイトル一覧を取得 [GET]
 
-* TODOのタイトルを全件取得する
-* パラメータにdoneがある場合、絞り込んで返却
+* TODOのタイトルを一覧で返却する
+* パラメータの指定がない場合、すべての一覧を返却
+* doneのみ指定された場合、条件に一致する一覧を返却
+* subjectのみ指定された場合、その文字列が含む一覧を返却
+* detailのみ指定された場合、その文字列が含む一覧を返却
+* 複数条件が指定された場合、AND検索して条件に一致した一覧を返却
 
 + Parameters 
     + done: false (boolean) - 完了かどうか(false:未完、true:完了)
+    + subject: 宿題 (string) - タイトル
+    + detail: 算数ドリル (string) - 内容
 
 + Response 200 (application/json)
     + Attributes

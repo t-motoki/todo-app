@@ -26,30 +26,41 @@ RegExp.escape = s => s.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
 // 文字列をBooleanに変換
 const toBoolean = data => data.toLowerCase() === "true";
 
-// todo一覧取得
-router.get('/', (req, res) => {
+// 条件付きクエリ作成
+const createConditionalQuery = reqQuery => {
 
-  // クエリの生成(どちらも指定されるとANDとなる)
+  // クエリの生成(複数指定されるとANDとなる)
   let query = {}; // 全検索
   let querylog = {};  // ログに正規表現をそのまま出力できないので別途用意
-  if("subject" in req.query){
-    const subject = RegExp.escape(req.query.subject);
+  if("subject" in reqQuery){
+    const subject = RegExp.escape(reqQuery.subject);
     query["subject"] = new RegExp(subject);
     querylog["subject"] = `/${subject}/`;
   }
-  if("detail" in req.query){
-    const detail = RegExp.escape(req.query.detail);
+  if("detail" in reqQuery){
+    const detail = RegExp.escape(reqQuery.detail);
     query["detail"] = new RegExp(detail);
     querylog["detail"] = `/${detail}/`;
   }
-  if("done" in req.query){
-    if(req.query.done==="true" || req.query.done==="false"){
+  if("done" in reqQuery){
+    if(reqQuery.done==="true" || reqQuery.done==="false"){
       // 正しい指定時のみ条件に入れる
-      query["done"] = toBoolean(req.query.done);
+      query["done"] = toBoolean(reqQuery.done);
       querylog["done"] = query["done"];
     }
   }
+
+  // 返却
   systemLogger.debug(`query:${JSON.stringify(querylog)}`);
+  return query;
+
+};
+
+// todo一覧取得
+router.get('/', (req, res) => {
+
+  // クエリ作成
+  const query = createConditionalQuery(req.query);
 
   // todo一覧を取得(IDとバージョンは取得しない)
   let result = JSON.parse(JSON.stringify(result_template));
@@ -73,8 +84,11 @@ router.get('/', (req, res) => {
 // タイトル一覧取得
 router.get('/subjects', (req, res) =>  {
 
+  // クエリ作成
+  const query = createConditionalQuery(req.query);
+
   let result = JSON.parse(JSON.stringify(result_template));
-  item.distinct("subject", (err, docs) => {
+  item.find(query).distinct("subject", (err, docs) => {
     res.header('Content-Type', contentType);
     if (err){
       result["result"] = 500;

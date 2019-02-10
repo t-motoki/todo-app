@@ -23,6 +23,9 @@ const result_template = {
 RegExp.escape = s => s.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
 /* eslint-enable */
 
+// 文字列をBooleanに変換
+const toBoolean = data => data.toLowerCase() === "true";
+
 // todo一覧取得
 router.get('/', (req, res) => {
 
@@ -38,6 +41,13 @@ router.get('/', (req, res) => {
     const detail = RegExp.escape(req.query.detail);
     query["detail"] = new RegExp(detail);
     querylog["detail"] = `/${detail}/`;
+  }
+  if("done" in req.query){
+    if(req.query.done==="true" || req.query.done==="false"){
+      // 正しい指定時のみ条件に入れる
+      query["done"] = toBoolean(req.query.done);
+      querylog["done"] = query["done"];
+    }
   }
   systemLogger.debug(`query:${JSON.stringify(querylog)}`);
 

@@ -292,11 +292,15 @@ router.put('/:subject', (req, res, next) => {
 
 });
 
-// todo全件削除
+// todo複数削除
 router.delete('/', (req, res) => {
 
+  // クエリ作成
+  const query = createConditionalQuery(req.query);
+
+  // 複数削除
   let result = JSON.parse(JSON.stringify(result_template));
-  item.remove({}, err => {
+  item.remove(query, err => {
     res.header('Content-Type', contentType);
     if (err){
       result["result"] = 500;
@@ -309,7 +313,7 @@ router.delete('/', (req, res) => {
   });
 });
 
-// 指定したtodo削除
+// todo1件削除
 router.delete('/:subject', (req, res) => {
 
   // クエリの生成

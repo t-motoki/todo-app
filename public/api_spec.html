@@ -171,6 +171,9 @@
 <li>
 <p>リクエストBodyにdoneがなければ「false」を追加する</p>
 </li>
+<li>
+<p>リクエストBodyのdoneに指定された値が正しく処理出来なかった場合はエラーを返す(100)</p>
+</li>
 </ul>
 <h4>Example URI</h4><div class="definition"><span class="method post">POST</span>&nbsp;<span class="uri"><span class="hostname"></span>/todo</span></div><div class="title"><strong>Request</strong><div class="collapse-button"><span class="close">Hide</span><span class="open">Show</span></div></div><div class="collapse-content"><div class="inner"><h5>Headers</h5><pre><code><span class="hljs-attribute">Content-Type</span>: <span class="hljs-string">application/json</span><br><span class="hljs-attribute">Accept</span>: <span class="hljs-string">application/json</span></code></pre><div style="height: 1px;"></div><h5>Body</h5><pre><code>{
   "<span class="hljs-attribute">done</span>": <span class="hljs-value"><span class="hljs-literal">false</span></span>,

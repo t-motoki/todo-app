@@ -47,7 +47,7 @@ router.get('/', (req, res) => {
     res.header('Content-Type', contentType);
     if (err){
       result["result"] = 500;
-      result["message"] = err.errmsg;
+      result["message"] = JSON.stringify(err);
       systemLogger.error(`result:${result["result"]}, message:${result["message"].replace(/\r?\n/g,'')}`);
     }else{
       // 正しく取得できた場合に格納
@@ -67,7 +67,7 @@ router.get('/subjects', (req, res) =>  {
     res.header('Content-Type', contentType);
     if (err){
       result["result"] = 500;
-      result["message"] = err.errmsg;
+      result["message"] = JSON.stringify(err);
       systemLogger.error(`result:${result["result"]}, message:${result["message"].replace(/\r?\n/g,'')}`);
     }else{
       // 正しく取得できた場合に格納
@@ -91,7 +91,7 @@ router.get('/:subject', (req, res) => {
     res.header('Content-Type', contentType);
     if (err){
       result["result"] = 500;
-      result["message"] = err.errmsg;
+      result["message"] = JSON.stringify(err);
       systemLogger.error(`result:${result["result"]}, message:${result["message"].replace(/\r?\n/g,'')}`);
     }else{
       if(docs){
@@ -112,7 +112,7 @@ router.get('/:subject', (req, res) => {
 // todo追加
 router.post('/', (req, res, next) => {
 
-  // 引数が揃っていることを確認
+  // 必須の引数が揃っていることを確認
   let check = false;
   if(!("subject" in req.body)){
     if(!("detail" in req.body)){
@@ -136,7 +136,12 @@ router.post('/', (req, res, next) => {
     systemLogger.debug(`query:${JSON.stringify(query)}`);
 
     // 登録データの作成
-    const register = {subject:req.body["subject"],detail:req.body["detail"]};
+    const register = {done:false,subject:req.body["subject"],detail:req.body["detail"]};
+    if("done" in req.body){
+      // 完了フラグが指定されていたら変更
+      register["done"] = req.body.done;
+    }
+
     systemLogger.debug(`register data:${JSON.stringify(register)}`);
 
     // 登録処理(無ければ追加、あれば更新)
@@ -144,9 +149,14 @@ router.post('/', (req, res, next) => {
     item.updateOne( query, register, {upsert: true}, err => {
       res.header('Content-Type', contentType);
       if (err){
-        result["result"] = 500;
-        result["message"] = err.errmsg;
-        systemLogger.error(`result: , message:${(err.errmsg).replace(/\r?\n/g,'')}`);
+        if(err.name === "CastError"){
+          // 不正な文字列だった場合、キャストエラーとなる
+          result["result"] = 100;
+        }else{
+          result["result"] = 500;
+        }
+        result["message"] = JSON.stringify(err);
+        systemLogger.error(`result: , message:${result["message"].replace(/\r?\n/g,'')}`);
       } 
       res.send(result);
     });
@@ -225,7 +235,7 @@ router.put('/:subject', (req, res, next) => {
           // その他実行エラー
           result["result"] = 500;
         }
-        result["message"] = err.errmsg;
+        result["message"] = JSON.stringify(err);
         systemLogger.error(`result: , message:${(err.errmsg).replace(/\r?\n/g,'')}`);
       }
 

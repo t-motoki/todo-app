@@ -73,6 +73,7 @@ FORMAT: 1A
 * 既に存在しているタイトルが指定された場合、上書き保存する
 * リクエストBodyにsubjectかdetail、もしくはどちらも指定がない場合はエラーを返す(100)
 * リクエストBodyにdoneがなければ「false」を追加する
+* リクエストBodyのdoneに指定された値が正しく処理出来なかった場合はエラーを返す(100)
 
 + Request (application/json)
     + Headers

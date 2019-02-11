@@ -64,7 +64,7 @@ router.get('/', (req, res) => {
 
   // todo一覧を取得(IDとバージョンは取得しない)
   let result = JSON.parse(JSON.stringify(result_template));
-  item.find(query, { _id:0, __v:0 }, (err, docs) => {
+  item.find(query, {_id:0, __v:0}, {sort:{ subject: 1 }}, (err, docs) => {
     res.header('Content-Type', contentType);
     if (err){
       result["result"] = 500;
@@ -96,8 +96,20 @@ router.get('/subjects', (req, res) =>  {
       result["message"] += JSON.stringify(err);
       systemLogger.error(`result:${result["result"]}, message:${result["message"].replace(/\r?\n/g,'')}`);
     }else{
+
       // 正しく取得できた場合に格納
-      result["data"] = JSON.parse(JSON.stringify(docs));
+      result["data"] = JSON.parse(JSON.stringify(docs.sort(
+      // distinctがsortに対応してないため、ここで昇順ソート
+      (a,b)=>{
+          let comp = 0;
+          if(a > b){
+            comp = 1;
+          }else if(a < b){
+            comp = -1;
+          }
+          return comp;
+        })
+      ));
     }
     // 結果を返却
     res.send(result);

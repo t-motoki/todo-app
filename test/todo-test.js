@@ -39,12 +39,12 @@ const todoData = [
     detail : "abcdefghijklmn"
   },
   {
-    done :true, subject : "test2",
-    detail : "jklmnopqrstuvwxyz123"
-  },
-  {
     done :false, subject : "test3",
     detail : "1234567890"
+  },
+  {
+    done :true, subject : "test2",
+    detail : "jklmnopqrstuvwxyz123"
   },
   {
     done :false, subject : "extr1",
@@ -135,24 +135,37 @@ describe(`正常シーケンス(複数削除とタイトル一覧の条件は、
       if(error) {
         return done(error);
       }
+
+      // Todoを登録
+      for(let item of todoData){
+        supertest.post('/todo')
+        .type('form')
+        .send(item)
+        .set('Accept', /application\/json/)
+        .expect(200)
+        .end((error, response) => {
+          if(error) {
+            return done(error);
+          }
+          expect(response.body).toEqual(checkResponse);
+        });
+      }
     });
   });
-  it('登録', (done) => {
+  it('登録(上書き)', (done) => {
     // Todoを登録
-    for(let item of todoData){
-      supertest.post('/todo')
-      .type('form')
-      .send(item)
-      .set('Accept', /application\/json/)
-      .expect(200)
-      .end((error, response) => {
-        if(error) {
-          return done(error);
-        }
-        expect(response.body).toEqual(checkResponse);
-      });
-    }
-    done();
+    supertest.post('/todo')
+    .type('form')
+    .send(todoData[0])
+    .set('Accept', /application\/json/)
+    .expect(200)
+    .end((error, response) => {
+      if(error) {
+        return done(error);
+      }
+      expect(response.body).toEqual(checkResponse);
+      done();
+    });
   });
   it('全件取得', (done) => {
     // 登録出来たデータが正しいかチェック
@@ -163,9 +176,8 @@ describe(`正常シーケンス(複数削除とタイトル一覧の条件は、
           return done(error);
         }
         expect(response.body.data.sort(compObject)).toEqual(todoData.sort(compObject));
+        done();
       });
-
-    done();
   });
   it('タイトル一覧取得', (done) => {
     supertest.get('/todo/subjects')
@@ -339,7 +351,7 @@ describe(`POST 登録のエラー、準正常系テスト`, () => {
   it('doneなし、subject数値', (done) => {
     supertest.post('/todo')
     .type('form')
-    .send({subject:123,detail:""})
+    .send({subject:"123",detail:""})
     .set('Accept', /application\/json/)
     .expect(200)
     .end((error, response) => {
@@ -347,8 +359,8 @@ describe(`POST 登録のエラー、準正常系テスト`, () => {
         return done(error);
       }
       expect(response.body).toEqual(checkResponse);
+      done();
     });
-    done();
   });
   it('done文字列＋不正文字', (done) => {
     supertest.post('/todo')
@@ -361,8 +373,8 @@ describe(`POST 登録のエラー、準正常系テスト`, () => {
         return done(error);
       }
       expect(response.body.result).toEqual(101);
+      done();
     });
-    done();
   });
   it('done文字列＋Boolean句', (done) => {
     supertest.post('/todo')
@@ -375,8 +387,8 @@ describe(`POST 登録のエラー、準正常系テスト`, () => {
         return done(error);
       }
       expect(response.body).toEqual(checkResponse);
+      done();
     });
-    done();
   });
   it('subjectなし', (done) => {
     supertest.post('/todo')
@@ -389,13 +401,13 @@ describe(`POST 登録のエラー、準正常系テスト`, () => {
         return done(error);
       }
       expect(response.body.result).toEqual(100);
+      done();
     });
-    done();
   });
   it('detailなし', (done) => {
     supertest.post('/todo')
     .type('form')
-    .send({done:"true",subject:""})
+    .send({done:"true",subject:"test20"})
     .set('Accept', /application\/json/)
     .expect(200)
     .end((error, response) => {
@@ -403,8 +415,8 @@ describe(`POST 登録のエラー、準正常系テスト`, () => {
         return done(error);
       }
       expect(response.body.result).toEqual(100);
+      done();
     });
-    done();
   });
   it('引数なし', (done) => {
     supertest.post('/todo')
@@ -417,8 +429,36 @@ describe(`POST 登録のエラー、準正常系テスト`, () => {
         return done(error);
       }
       expect(response.body.result).toEqual(100);
+      done();
     });
-    done();
+  });
+  it('subject空白', (done) => {
+    supertest.post('/todo')
+    .type('form')
+    .send({done:"false",subject:"",detail:""})
+    .set('Accept', /application\/json/)
+    .expect(200)
+    .end((error, response) => {
+      if(error) {
+        return done(error);
+      }
+      expect(response.body.result).toEqual(103);
+      done();
+    });
+  });
+  it('subjectがsubjects', (done) => {
+    supertest.post('/todo')
+    .type('form')
+    .send({done:"false",subject:"subjects",detail:""})
+    .set('Accept', /application\/json/)
+    .expect(200)
+    .end((error, response) => {
+      if(error) {
+        return done(error);
+      }
+      expect(response.body.result).toEqual(103);
+      done();
+    });
   });
   it('subject50文字', (done) => {
     let testdata = "";
@@ -435,8 +475,8 @@ describe(`POST 登録のエラー、準正常系テスト`, () => {
         return done(error);
       }
       expect(response.body).toEqual(checkResponse);
+      done();
     });
-    done();
   });
   it('subject51文字', (done) => {
     let testdata = "";
@@ -453,8 +493,8 @@ describe(`POST 登録のエラー、準正常系テスト`, () => {
         return done(error);
       }
       expect(response.body.result).toEqual(102);
+      done();
     });
-    done();
   });
   it('detail255文字', (done) => {
     let testdata = "";
@@ -463,7 +503,7 @@ describe(`POST 登録のエラー、準正常系テスト`, () => {
     }
     supertest.post('/todo')
     .type('form')
-    .send({done:"false",subject:"",detail:testdata})
+    .send({done:"false",subject:"extr5",detail:testdata})
     .set('Accept', /application\/json/)
     .expect(200)
     .end((error, response) => {
@@ -471,8 +511,8 @@ describe(`POST 登録のエラー、準正常系テスト`, () => {
         return done(error);
       }
       expect(response.body).toEqual(checkResponse);
+      done();
     });
-    done();
   });
   it('detail256文字', (done) => {
     let testdata = "";
@@ -481,7 +521,7 @@ describe(`POST 登録のエラー、準正常系テスト`, () => {
     }
     supertest.post('/todo')
     .type('form')
-    .send({done:"false",subject:"",detail:testdata})
+    .send({done:"false",subject:"extr5",detail:testdata})
     .set('Accept', /application\/json/)
     .expect(200)
     .end((error, response) => {
@@ -489,7 +529,310 @@ describe(`POST 登録のエラー、準正常系テスト`, () => {
         return done(error);
       }
       expect(response.body.result).toEqual(102);
+      done();
+    });
+  });
+
+  after('最後にテストデータを削除しておく', () => {
+    supertest.del('/todo')
+      .end((error, response) => {
+      if(error) {
+        return done(error);
+      }
+    });
+  });
+
+});
+
+describe(`PUT 更新のエラー、準正常系テスト`, () => {
+  before('事前にテストデータを登録しておく', () => {
+    // Todoを登録
+    for(let item of todoData){
+      supertest.post('/todo')
+      .type('form')
+      .send(item)
+      .set('Accept', /application\/json/)
+      .expect(200)
+      .end((error, response) => {
+        if(error) {
+          return done(error);
+        }
+        expect(response.body).toEqual(checkResponse);
+      });
+    }
+  });
+  it('更新対象指定なし', (done) => {
+    supertest.put('/todo')
+    .type('form')
+    .send({done:"aaa",subject:123,detail:""})
+    .set('Accept', /application\/json/)
+    .expect(200)
+    .end((error, response) => {
+      if(error) {
+        return done(error);
+      }
+      expect(response.body.result).toEqual(100);
+      done();
+    });
+  });
+  it('存在しているsubjectに変更しようとした', (done) => {
+    supertest.put('/todo/test1')
+    .type('form')
+    .send({done:true,subject:"test2",detail:""})
+    .set('Accept', /application\/json/)
+    .expect(200)
+    .end((error, response) => {
+      if(error) {
+        return done(error);
+      }
+      expect(response.body.result).toEqual(200);
+      done();
+    });
+  });
+  it('doneなし、subject数値', (done) => {
+    supertest.put('/todo/test1')
+    .type('form')
+    .send({subject:123,detail:""})
+    .set('Accept', /application\/json/)
+    .expect(200)
+    .end((error, response) => {
+      if(error) {
+        return done(error);
+      }
+      expect(response.body).toEqual(checkResponse);
+
+      // 更新されているか確認
+      supertest.get('/todo/123')
+        .expect(200)
+        .end((error, response) => {
+          if(error) {
+            return done(error);
+          }
+          let check = JSON.parse(JSON.stringify(checkResponse));
+          check["data"] = {done:true,subject:"123",detail:""};
+          expect(response.body).toEqual(check);
+          done();
+        });
+    });
+  });
+  it('存在しないsubjectを更新しようとする', (done) => {
+    supertest.put('/todo/cccc')
+    .type('form')
+    .send({done:true,subject:"push",detail:""})
+    .set('Accept', /application\/json/)
+    .expect(200)
+    .end((error, response) => {
+      if(error) {
+        return done(error);
+      }
+      expect(response.body.result).toEqual(300);
+      done();
+    });
+  });
+  it('done文字列＋不正文字', (done) => {
+    supertest.put('/todo/test2')
+    .type('form')
+    .send({done:"aaa",subject:567,detail:""})
+    .set('Accept', /application\/json/)
+    .expect(200)
+    .end((error, response) => {
+      if(error) {
+        return done(error);
+      }
+      expect(response.body.result).toEqual(101);
+      done();
+    });
+  });
+  it('done文字列＋Boolean句', (done) => {
+    supertest.put('/todo/test2')
+    .type('form')
+    .send({done:"true",subject:567,detail:""})
+    .set('Accept', /application\/json/)
+    .expect(200)
+    .end((error, response) => {
+      if(error) {
+        return done(error);
+      }
+      expect(response.body).toEqual(checkResponse);
+
+      // 更新されているか確認
+      supertest.get('/todo/567')
+        .expect(200)
+        .end((error, response) => {
+          if(error) {
+            return done(error);
+          }
+          let check = JSON.parse(JSON.stringify(checkResponse));
+          check["data"] = {done:true,subject:"567",detail:""};
+          expect(response.body).toEqual(check);
+          done();
+        });
+    });
+  });
+  it('subjectなし', (done) => {
+    supertest.put('/todo/test3')
+    .type('form')
+    .send({done:"true",detail:"部分更新できる"})
+    .set('Accept', /application\/json/)
+    .expect(200)
+    .end((error, response) => {
+      if(error) {
+        return done(error);
+      }
+      expect(response.body).toEqual(checkResponse);
+
+      // 更新されているか確認
+      supertest.get('/todo/test3')
+        .expect(200)
+        .end((error, response) => {
+          if(error) {
+            return done(error);
+          }
+          let check = JSON.parse(JSON.stringify(checkResponse));
+          check["data"] = {done:true,subject:"test3",detail:"部分更新できる"};
+          expect(response.body).toEqual(check);
+          done();
+        });
+    });
+  });
+  it('detailなし', (done) => {
+    supertest.put('/todo/extr1')
+    .type('form')
+    .send({done:"true",subject:"extr10"})
+    .set('Accept', /application\/json/)
+    .expect(200)
+    .end((error, response) => {
+      if(error) {
+        return done(error);
+      }
+      expect(response.body).toEqual(checkResponse);
+
+      // 更新されているか確認
+      supertest.get('/todo/extr10')
+      .expect(200)
+      .end((error, response) => {
+        if(error) {
+          return done(error);
+        }
+        let check = JSON.parse(JSON.stringify(checkResponse));
+        check["data"] = {done:true,subject:"extr10",detail:"今日は晴れのち曇り"};
+        expect(response.body).toEqual(check);
+        done();
+      });
+    });
+  });
+  it('引数なし', (done) => {
+    supertest.put('/todo/extr2')
+    .type('form')
+    .send({})
+    .set('Accept', /application\/json/)
+    .expect(200)
+    .end((error, response) => {
+      if(error) {
+        return done(error);
+      }
+      expect(response.body.result).toEqual(100);
     });
     done();
+  });
+  it('subject空白', (done) => {
+    supertest.put('/todo/extr2')
+    .type('form')
+    .send({done:"false",subject:"",detail:""})
+    .set('Accept', /application\/json/)
+    .expect(200)
+    .end((error, response) => {
+      if(error) {
+        return done(error);
+      }
+      expect(response.body.result).toEqual(103);
+      done();
+    });
+  });
+  it('subjectがsubjects', (done) => {
+    supertest.put('/todo/extr2')
+    .type('form')
+    .send({done:"false",subject:"subjects",detail:""})
+    .set('Accept', /application\/json/)
+    .expect(200)
+    .end((error, response) => {
+      if(error) {
+        return done(error);
+      }
+      expect(response.body.result).toEqual(103);
+      done();
+    });
+  });
+  it('subject50文字', (done) => {
+    let testdata = "";
+    for(let i=0; i<50; i++){
+        testdata += i % 10;
+    }
+    supertest.put('/todo/extr2')
+    .type('form')
+    .send({done:"false",subject:testdata,detail:""})
+    .set('Accept', /application\/json/)
+    .expect(200)
+    .end((error, response) => {
+      if(error) {
+        return done(error);
+      }
+      expect(response.body).toEqual(checkResponse);
+      done();
+    });
+  });
+  it('subject51文字', (done) => {
+    let testdata = "";
+    for(let i=0; i<51; i++){
+        testdata += i % 10;
+    }
+    supertest.put('/todo/extr2')
+    .type('form')
+    .send({done:"false",subject:testdata,detail:""})
+    .set('Accept', /application\/json/)
+    .expect(200)
+    .end((error, response) => {
+      if(error) {
+        return done(error);
+      }
+      expect(response.body.result).toEqual(102);
+      done();
+    });
+  });
+  it('detail255文字', (done) => {
+    let testdata = "";
+    for(let i=0; i<255; i++){
+        testdata += i % 10;
+    }
+    supertest.put('/todo/extr10')
+    .type('form')
+    .send({done:"false",subject:"extr10",detail:testdata})
+    .set('Accept', /application\/json/)
+    .expect(200)
+    .end((error, response) => {
+      if(error) {
+        return done(error);
+      }
+      expect(response.body).toEqual(checkResponse);
+      done();
+    });
+  });
+  it('detail256文字', (done) => {
+    let testdata = "";
+    for(let i=0; i<256; i++){
+        testdata += i % 10;
+    }
+    supertest.put('/todo/extr10')
+    .type('form')
+    .send({done:"false",subject:"extr10",detail:testdata})
+    .set('Accept', /application\/json/)
+    .expect(200)
+    .end((error, response) => {
+      if(error) {
+        return done(error);
+      }
+      expect(response.body.result).toEqual(102);
+      done();
+    });
   });
 });

@@ -170,6 +170,14 @@ router.post('/', (req, res, next) => {
     // エラー処理
     next();
   }else{
+
+    if(req.body.subject==="subjects"){
+      res.header('Content-Type', contentType);
+      return res.send({
+        result:103, message:"[subjects]はAPI名の為、登録できません。"
+      });
+    }  
+
     // クエリの生成
     const query = {subject:req.body.subject};
     systemLogger.debug(`query:${JSON.stringify(query)}`);
@@ -244,6 +252,12 @@ router.put('/:subject', (req, res, next) => {
   let register = {};
   if("subject" in req.body){
     register["subject"] = req.body["subject"];
+    if(register["subject"]==="subjects"){
+      res.header('Content-Type', contentType);
+      return res.send({
+        result:103, message:"[subjects]はAPI名の為、登録できません。"
+      });
+    }  
   }
   if("detail" in req.body){
     register["detail"] = req.body["detail"];

@@ -185,12 +185,17 @@ router.post('/', (req, res, next) => {
 
     // 登録処理(無ければ追加、あれば更新)
     let result = JSON.parse(JSON.stringify(result_template));
-    item.updateOne( query, register, {upsert: true}, err => {
+    item.updateOne( query, register, {upsert: true, runValidators: true}, err => {
       res.header('Content-Type', contentType);
       if (err){
         if(err.name === "CastError"){
           // doneが不正な文字列だった場合、キャストエラーとなる
-          result["result"] = 100;
+          result["result"] = 101;
+          result["message"] = "doneにその文字列は使えません。詳細 => ";
+        }else if(err.name === "ValidationError"){
+          // 今はValidationErrorが1つしかないので決め打ちする
+          result["result"] = 102;
+          result["message"] = "文字数が超過しました。詳細 => ";
         }else{
           result["result"] = 500;
           result["message"] = "データベース実行時にエラーが発生しました。詳細 => ";
@@ -260,13 +265,17 @@ router.put('/:subject', (req, res, next) => {
 
     // 登録処理(無ければ追加、あれば更新)
     let result = JSON.parse(JSON.stringify(result_template));
-    item.updateOne( query, register, (err, docs) => {
+    item.updateOne( query, register, {runValidators: true}, (err, docs) => {
       res.header('Content-Type', contentType);
       if (err){
         if(err.name === "CastError"){
           // 不正な文字列だった場合、キャストエラーとなる
-          result["result"] = 100;
+          result["result"] = 101;
           result["message"] = "doneにその文字列は使えません。詳細 => ";
+        }else if(err.name === "ValidationError"){
+          // 今はValidationErrorが1つしかないので決め打ちする
+          result["result"] = 102;
+          result["message"] = "文字数が超過しました。詳細 => ";
         }else if(err.code === 11000){
           // 既に存在しているタイトルに変更しようとした
           result["result"] = 200;

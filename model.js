@@ -8,8 +8,8 @@ const Schema = mongoose.Schema;
 // Todoデータのスキーマを定義
 const Item = new Schema({
   done: { type: Boolean, required: true },
-  subject: { type: String, required: true, unique: true },
-  detail : { type: String, required: true }
+  subject: { type: String, maxlength: 50, unique: true },
+  detail : { type: String, maxlength: 255 }
 });
 
 // DBと接続

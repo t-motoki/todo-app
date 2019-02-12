@@ -168,7 +168,6 @@ describe(`正常シーケンス(複数削除とタイトル一覧の条件は、
     done();
   });
   it('タイトル一覧取得', (done) => {
-    // 登録出来たデータが正しいかチェック
     supertest.get('/todo/subjects')
       .expect(200)
       .end((error, response) => {
@@ -334,4 +333,163 @@ describe(`正常シーケンス(複数削除とタイトル一覧の条件は、
   });
 
 
+});
+
+describe(`POST 登録のエラー、準正常系テスト`, () => {
+  it('doneなし、subject数値', (done) => {
+    supertest.post('/todo')
+    .type('form')
+    .send({subject:123,detail:""})
+    .set('Accept', /application\/json/)
+    .expect(200)
+    .end((error, response) => {
+      if(error) {
+        return done(error);
+      }
+      expect(response.body).toEqual(checkResponse);
+    });
+    done();
+  });
+  it('done文字列＋不正文字', (done) => {
+    supertest.post('/todo')
+    .type('form')
+    .send({done:"aaa",subject:123,detail:""})
+    .set('Accept', /application\/json/)
+    .expect(200)
+    .end((error, response) => {
+      if(error) {
+        return done(error);
+      }
+      expect(response.body.result).toEqual(101);
+    });
+    done();
+  });
+  it('done文字列＋Boolean句', (done) => {
+    supertest.post('/todo')
+    .type('form')
+    .send({done:"true",subject:123,detail:""})
+    .set('Accept', /application\/json/)
+    .expect(200)
+    .end((error, response) => {
+      if(error) {
+        return done(error);
+      }
+      expect(response.body).toEqual(checkResponse);
+    });
+    done();
+  });
+  it('subjectなし', (done) => {
+    supertest.post('/todo')
+    .type('form')
+    .send({done:"true",detail:""})
+    .set('Accept', /application\/json/)
+    .expect(200)
+    .end((error, response) => {
+      if(error) {
+        return done(error);
+      }
+      expect(response.body.result).toEqual(100);
+    });
+    done();
+  });
+  it('detailなし', (done) => {
+    supertest.post('/todo')
+    .type('form')
+    .send({done:"true",subject:""})
+    .set('Accept', /application\/json/)
+    .expect(200)
+    .end((error, response) => {
+      if(error) {
+        return done(error);
+      }
+      expect(response.body.result).toEqual(100);
+    });
+    done();
+  });
+  it('引数なし', (done) => {
+    supertest.post('/todo')
+    .type('form')
+    .send({})
+    .set('Accept', /application\/json/)
+    .expect(200)
+    .end((error, response) => {
+      if(error) {
+        return done(error);
+      }
+      expect(response.body.result).toEqual(100);
+    });
+    done();
+  });
+  it('subject50文字', (done) => {
+    let testdata = "";
+    for(let i=0; i<50; i++){
+        testdata += i % 10;
+    }
+    supertest.post('/todo')
+    .type('form')
+    .send({done:"false",subject:testdata,detail:""})
+    .set('Accept', /application\/json/)
+    .expect(200)
+    .end((error, response) => {
+      if(error) {
+        return done(error);
+      }
+      expect(response.body).toEqual(checkResponse);
+    });
+    done();
+  });
+  it('subject51文字', (done) => {
+    let testdata = "";
+    for(let i=0; i<51; i++){
+        testdata += i % 10;
+    }
+    supertest.post('/todo')
+    .type('form')
+    .send({done:"false",subject:testdata,detail:""})
+    .set('Accept', /application\/json/)
+    .expect(200)
+    .end((error, response) => {
+      if(error) {
+        return done(error);
+      }
+      expect(response.body.result).toEqual(102);
+    });
+    done();
+  });
+  it('detail255文字', (done) => {
+    let testdata = "";
+    for(let i=0; i<255; i++){
+        testdata += i % 10;
+    }
+    supertest.post('/todo')
+    .type('form')
+    .send({done:"false",subject:"",detail:testdata})
+    .set('Accept', /application\/json/)
+    .expect(200)
+    .end((error, response) => {
+      if(error) {
+        return done(error);
+      }
+      expect(response.body).toEqual(checkResponse);
+    });
+    done();
+  });
+  it('detail256文字', (done) => {
+    let testdata = "";
+    for(let i=0; i<256; i++){
+        testdata += i % 10;
+    }
+    supertest.post('/todo')
+    .type('form')
+    .send({done:"false",subject:"",detail:testdata})
+    .set('Accept', /application\/json/)
+    .expect(200)
+    .end((error, response) => {
+      if(error) {
+        return done(error);
+      }
+      expect(response.body.result).toEqual(102);
+    });
+    done();
+  });
 });

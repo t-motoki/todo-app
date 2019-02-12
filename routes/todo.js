@@ -201,11 +201,16 @@ router.post('/', (req, res, next) => {
           result["result"] = 101;
           result["message"] = "doneにその文字列は使えません。詳細 => ";
         }else if(err.name === "ValidationError"){
-          if(err.errors.subject.properties.type==="required"){
-            // subjectは空白禁止
-            result["result"] = 103;
-            result["message"] = "subjectに空白は登録できません。詳細 => ";
-          }else{
+          let isMaxlength = true;
+          if("subject" in err.errors){
+            if(err.errors.subject.properties.type==="required"){
+              // subjectは空白禁止
+              result["result"] = 103;
+              result["message"] = "subjectに空白は登録できません。詳細 => ";
+              isMaxlength = false;
+            }
+          }
+          if(isMaxlength){
             // 文字数超過
             result["result"] = 102;
             result["message"] = "登録しようとしている文字数が超過しています。詳細 => ";
@@ -293,11 +298,16 @@ router.put('/:subject', (req, res, next) => {
           result["result"] = 101;
           result["message"] = "doneにその文字列は使えません。詳細 => ";
         }else if(err.name === "ValidationError"){
-          if(err.errors.subject.properties.type==="required"){
-            // subjectは空白禁止
-            result["result"] = 103;
-            result["message"] = "subjectに空白は登録できません。詳細 => ";
-          }else{
+          let isMaxlength = true;
+          if("subject" in err.errors){
+            if(err.errors.subject.properties.type==="required"){
+              // subjectは空白禁止
+              result["result"] = 103;
+              result["message"] = "subjectに空白は登録できません。詳細 => ";
+              isMaxlength = false;
+            }
+          }
+          if(isMaxlength){
             // 文字数超過
             result["result"] = 102;
             result["message"] = "登録しようとしている文字数が超過しています。詳細 => ";

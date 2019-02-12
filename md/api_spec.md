@@ -83,7 +83,8 @@ FORMAT: 1A
 * リクエストBodyのdoneに指定された値が正しく処理出来なかった場合はエラーを返す(101)
 * リクエストBodyのsubjectは50文字まで。超えた場合はエラーを返す(102)
 * リクエストBodyのdetailは255文字まで。超えた場合はエラーを返す(102)
-* リクエストBodyのsubjectにsubjectsが指定された場合はエラーを返す(103)
+* リクエストBodyのsubjectに空白が指定された場合はエラーを返す(103)
+* リクエストBodyのsubjectに文字列「subjects」が指定された場合はエラーを返す(103)
 
 + Request (application/json)
     + Headers
@@ -111,7 +112,8 @@ FORMAT: 1A
 * リクエストBodyのdoneに指定された値が正しく処理出来なかった場合はエラーを返す(101)
 * リクエストBodyのsubjectは50文字まで。超えた場合はエラーを返す(102)
 * リクエストBodyのdetailは255文字まで。超えた場合はエラーを返す(102)
-* リクエストBodyのsubjectにsubjectsが指定された場合はエラーを返す(103)
+* リクエストBodyのsubjectに空白が指定された場合はエラーを返す(103)
+* リクエストBodyのsubjectに文字列「subjects」が指定された場合はエラーを返す(103)
 
 + Parameters 
     + subject: 宿題 (string, required) - タイトル

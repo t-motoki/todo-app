@@ -60,6 +60,29 @@ const todoData = [
   }
 ]
 
+describe(`Webサーバ基本機能`, () => {
+  it('存在しないページ', (done) => {
+    supertest.get('/test')
+      .expect(404)
+      .end((error, response) => {
+        if(error) {
+          return done(error);
+        }
+        done();
+      });
+  });
+  it('サーバエラー', (done) => {
+    supertest.get('/test/broken')
+      .expect(500)
+      .end((error, response) => {
+        if(error) {
+          return done(error);
+        }
+        done();
+      });
+  });
+});
+  
 describe(`サポートAPIのチェック`, () => {
   it('デモ用ページ読み込み', (done) => {
     supertest.get('/')
@@ -105,7 +128,7 @@ describe(`サポートAPIのチェック`, () => {
   });
 });
 
-describe(`正常シーケンス(複数削除以外)`, () => {
+describe(`正常シーケンス(複数削除とタイトル一覧の条件は、複数取得と同じ処理なので動作保証。動作確認済み)`, () => {
   before('事前に全件削除しておく', () => {
     supertest.del('/todo')
       .end((error, response) => {

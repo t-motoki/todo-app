@@ -29,4 +29,14 @@ router.get('/api/error', (req, res) => {
   res.send(result);
 });
 
+// テスト用API(500)
+router.get('/test/broken', (req, res) => {
+    try {
+      throw new Error("BROKEN");
+    }
+    catch (err) {
+      next(err);
+    }
+});
+
 module.exports = router;

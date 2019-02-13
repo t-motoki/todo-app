@@ -7,7 +7,7 @@ const errorlist = require('./errorlist');
 
 // TOPページ
 router.get('/', (req, res) => {
-  res.render('index', { title: 'Express' });
+  res.sendFile('./public/index.html', { root: __dirname });
 });
 
 // API一覧を取得

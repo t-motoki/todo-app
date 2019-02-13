@@ -2,8 +2,7 @@ const expect = require('expect');
 const app = require('../app');
 const supertest = require('supertest').agent(app.listen());
 
-const errorlist = require('../routes/apilist');
-const apilist = require('../routes/apilist');
+const async = require('async');
 
 // API共通のレスポンス確認用
 const checkResponse = {
@@ -135,37 +134,31 @@ describe(`正常シーケンス(複数削除とタイトル一覧の条件は、
       if(error) {
         return done(error);
       }
-
-      // Todoを登録
-      for(let item of todoData){
-        supertest.post('/todo')
-        .type('form')
-        .send(item)
-        .set('Accept', /application\/json/)
-        .expect(200)
-        .end((error, response) => {
-          if(error) {
-            return done(error);
-          }
-          expect(response.body).toEqual(checkResponse);
-        });
-      }
     });
   });
-  it('登録(上書き)', (done) => {
-    // Todoを登録
-    supertest.post('/todo')
-    .type('form')
-    .send(todoData[0])
-    .set('Accept', /application\/json/)
-    .expect(200)
-    .end((error, response) => {
-      if(error) {
-        return done(error);
+  it('登録', (done) => {
+
+      // リクエストを登録
+      let reglist = [];
+      for(let item of todoData){
+        reglist.push(
+          supertest.post('/todo')
+          .type('form')
+          .send(item)
+          .set('Accept', /application\/json/)
+          .expect(200)
+          .end((error, response) => {
+            if(error) {
+              return done(error);
+            }
+            expect(response.body).toEqual(checkResponse);
+          })
+        )
       }
-      expect(response.body).toEqual(checkResponse);
-      done();
-    });
+
+      // test実行
+      async.series(reglist,done());
+
   });
   it('全件取得', (done) => {
     // 登録出来たデータが正しいかチェック
@@ -297,6 +290,35 @@ describe(`正常シーケンス(複数削除とタイトル一覧の条件は、
         done();
       });
   });
+
+  it('登録(上書き)', (done) => {
+    let afterItem = {done:false, subject:"test1", detail:"詳細書き換え後2"};
+    supertest.post('/todo')
+    .type('form')
+    .send(afterItem)
+    .set('Accept', /application\/json/)
+    .expect(200)
+    .end((error, response) => {
+      if(error) {
+        return done(error);
+      }
+      expect(response.body).toEqual(checkResponse);
+
+      // 更新確認
+      supertest.get('/todo/test1')
+      .expect(200)
+      .end((error, response) => {
+        if(error) {
+          return done(error);
+        }
+        let check = JSON.parse(JSON.stringify(checkResponse));
+        check["data"] = afterItem;
+        expect(response.body).toEqual(check);
+        done();
+      });
+    });
+  });
+
   it('1件削除', (done) => {
     supertest.del('/todo/aftersubject')
       .expect(200)
@@ -359,7 +381,20 @@ describe(`POST 登録のエラー、準正常系テスト`, () => {
         return done(error);
       }
       expect(response.body).toEqual(checkResponse);
-      done();
+
+       // 更新されているか確認
+      supertest.get('/todo/123')
+        .expect(200)
+        .end((error, response) => {
+          if(error) {
+            return done(error);
+          }
+          let check = JSON.parse(JSON.stringify(checkResponse));
+          check["data"] = {done:false,subject:"123",detail:""};
+          expect(response.body).toEqual(check);
+          done();
+        });
+
     });
   });
   it('done文字列＋不正文字', (done) => {
@@ -387,8 +422,20 @@ describe(`POST 登録のエラー、準正常系テスト`, () => {
         return done(error);
       }
       expect(response.body).toEqual(checkResponse);
-      done();
-    });
+
+       // 更新されているか確認
+      supertest.get('/todo/123')
+        .expect(200)
+        .end((error, response) => {
+          if(error) {
+            return done(error);
+          }
+          let check = JSON.parse(JSON.stringify(checkResponse));
+          check["data"] = {done:true,subject:"123",detail:""};
+          expect(response.body).toEqual(check);
+          done();
+        });
+   });
   });
   it('subjectなし', (done) => {
     supertest.post('/todo')
@@ -475,7 +522,19 @@ describe(`POST 登録のエラー、準正常系テスト`, () => {
         return done(error);
       }
       expect(response.body).toEqual(checkResponse);
-      done();
+
+      // 更新されているか確認
+      supertest.get(`/todo/${testdata}`)
+        .expect(200)
+        .end((error, response) => {
+          if(error) {
+            return done(error);
+          }
+          let check = JSON.parse(JSON.stringify(checkResponse));
+          check["data"] = {done:false,subject:testdata,detail:""};
+          expect(response.body).toEqual(check);
+          done();
+        });
     });
   });
   it('subject51文字', (done) => {
@@ -510,8 +569,21 @@ describe(`POST 登録のエラー、準正常系テスト`, () => {
       if(error) {
         return done(error);
       }
+
       expect(response.body).toEqual(checkResponse);
-      done();
+
+      // 更新されているか確認
+      supertest.get('/todo/extr5')
+        .expect(200)
+        .end((error, response) => {
+          if(error) {
+            return done(error);
+          }
+          let check = JSON.parse(JSON.stringify(checkResponse));
+          check["data"] = {done:false,subject:"extr5",detail:testdata};
+          expect(response.body).toEqual(check);
+          done();
+        });
     });
   });
   it('detail256文字', (done) => {
@@ -778,7 +850,19 @@ describe(`PUT 更新のエラー、準正常系テスト`, () => {
         return done(error);
       }
       expect(response.body).toEqual(checkResponse);
-      done();
+
+      // 更新されているか確認
+      supertest.get(`/todo/${testdata}`)
+        .expect(200)
+        .end((error, response) => {
+          if(error) {
+            return done(error);
+          }
+          let check = JSON.parse(JSON.stringify(checkResponse));
+          check["data"] = {done:false,subject:testdata,detail:""};
+          expect(response.body).toEqual(check);
+          done();
+        });
     });
   });
   it('subject51文字', (done) => {
@@ -814,7 +898,19 @@ describe(`PUT 更新のエラー、準正常系テスト`, () => {
         return done(error);
       }
       expect(response.body).toEqual(checkResponse);
-      done();
+
+      // 更新されているか確認
+      supertest.get('/todo/extr10')
+        .expect(200)
+        .end((error, response) => {
+          if(error) {
+            return done(error);
+          }
+          let check = JSON.parse(JSON.stringify(checkResponse));
+          check["data"] = {done:false,subject:"extr10",detail:testdata};
+          expect(response.body).toEqual(check);
+          done();
+        });
     });
   });
   it('detail256文字', (done) => {

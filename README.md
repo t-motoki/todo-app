@@ -31,17 +31,17 @@
   
 ### ◆REST-API起動コマンド
   
-```npm:command
-   npm server
-```
+  ```npm:command
+     npm server
+  ```
   
 REST-API起動後、下記URLにブラウザでアクセスすると、
 API仕様書を確認することが出来ます。
   
 http://localhost:3000/api/spec
-　 
-　 
   
-以下のデモ用Webで簡単な動作を確認出来ます。
-　 
+  
+    
+以下のデモ用Webで簡単な動作を確認出来ます。  
+  
 http://localhost:3000/

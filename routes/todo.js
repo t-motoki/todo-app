@@ -2,6 +2,7 @@
 
 const express = require('express');
 const router = express.Router();
+const EL = require('./errorlist');
 
 //logger
 const log4js = require('log4js');
@@ -14,7 +15,7 @@ const item = require('../model');
 // レスポンス情報
 const contentType = 'application/json; Accept-Charset=utf-8';
 const result_template = {
-  result:0,
+  result:EL.NO_ERROR.num,
   message:""
 };
 
@@ -67,7 +68,7 @@ router.get('/', (req, res) => {
   item.find(query, {_id:0, __v:0}, {sort:{ subject: 1 }}, (err, docs) => {
     res.header('Content-Type', contentType);
     if (err){
-      result["result"] = 500;
+      result["result"] = EL.E_RUN_DATABASE.num;
       result["message"] = "データベース実行時にエラーが発生しました。詳細 => ";
       result["message"] += JSON.stringify(err);
       systemLogger.error(`result:${result["result"]}, message:${result["message"].replace(/\r?\n/g,'')}`);
@@ -91,7 +92,7 @@ router.get('/subjects', (req, res) =>  {
   item.find(query).distinct("subject", (err, docs) => {
     res.header('Content-Type', contentType);
     if (err){
-      result["result"] = 500;
+      result["result"] = EL.E_RUN_DATABASE.num;
       result["message"] = "データベース実行時にエラーが発生しました。詳細 => ";
       result["message"] += JSON.stringify(err);
       systemLogger.error(`result:${result["result"]}, message:${result["message"].replace(/\r?\n/g,'')}`);
@@ -128,7 +129,7 @@ router.get('/:subject', (req, res) => {
   item.findOne(query, { _id:0, __v:0 }, (err, docs) => {
     res.header('Content-Type', contentType);
     if (err){
-      result["result"] = 500;
+      result["result"] = EL.E_RUN_DATABASE.num;
       result["message"] = "データベース実行時にエラーが発生しました。詳細 => ";
       result["message"] += JSON.stringify(err);
       systemLogger.error(`result:${result["result"]}, message:${result["message"].replace(/\r?\n/g,'')}`);
@@ -174,7 +175,8 @@ router.post('/', (req, res, next) => {
     if(req.body.subject==="subjects"){
       res.header('Content-Type', contentType);
       return res.send({
-        result:103, message:"[subjects]はAPI名の為、登録できません。"
+        result:EL.E_PRM_PROHIBITED.num,
+        message:"[subjects]はAPI名の為、登録できません。"
       });
     }  
 
@@ -198,25 +200,25 @@ router.post('/', (req, res, next) => {
       if (err){
         if(err.name === "CastError"){
           // doneが不正な文字列だった場合、キャストエラーとなる
-          result["result"] = 101;
+          result["result"] = EL.E_PRM_TYPECAST.num;
           result["message"] = "doneにその文字列は使えません。詳細 => ";
         }else if(err.name === "ValidationError"){
           let isMaxlength = true;
           if("subject" in err.errors){
             if(err.errors.subject.properties.type==="required"){
               // subjectは空白禁止
-              result["result"] = 103;
+              result["result"] = EL.E_PRM_PROHIBITED.num;
               result["message"] = "subjectに空白は登録できません。詳細 => ";
               isMaxlength = false;
             }
           }
           if(isMaxlength){
             // 文字数超過
-            result["result"] = 102;
+            result["result"] = EL.E_PRM_SIZEOVER.num;
             result["message"] = "登録しようとしている文字数が超過しています。詳細 => ";
           }
         }else{
-          result["result"] = 500;
+          result["result"] = EL.E_RUN_DATABASE.num;
           result["message"] = "データベース実行時にエラーが発生しました。詳細 => ";
         }
         result["message"] += JSON.stringify(err);
@@ -230,7 +232,7 @@ router.post('/', (req, res, next) => {
 
   // 引数が足りていないためエラー
   let result = {
-    result: 100,
+    result: EL.E_PRM_NOTENOUGH.num,
     message: `${res["errorfactor"]}が指定されていません。`
   };
   systemLogger.error(`result:${result["result"]}, message:${result["message"].replace(/\r?\n/g,'')}`);
@@ -246,7 +248,7 @@ router.put('/', (req, res) => {
 
   // 引数が足りていないためエラー
   let result = {
-    result: 100,
+    result: EL.E_PRM_NOTENOUGH.num,
     message: `更新対象となる元のsubjectが指定されていません。`
   };
   systemLogger.error(`result:${result["result"]}, message:${result["message"].replace(/\r?\n/g,'')}`);
@@ -266,7 +268,8 @@ router.put('/:subject', (req, res, next) => {
     if(register["subject"]==="subjects"){
       res.header('Content-Type', contentType);
       return res.send({
-        result:103, message:"[subjects]はAPI名の為、登録できません。"
+        result:EL.E_PRM_PROHIBITED.num,
+        message:"[subjects]はAPI名の為、登録できません。"
       });
     }  
   }
@@ -295,30 +298,30 @@ router.put('/:subject', (req, res, next) => {
       if (err){
         if(err.name === "CastError"){
           // 不正な文字列だった場合、キャストエラーとなる
-          result["result"] = 101;
+          result["result"] = EL.E_PRM_TYPECAST.num;
           result["message"] = "doneにその文字列は使えません。詳細 => ";
         }else if(err.name === "ValidationError"){
           let isMaxlength = true;
           if("subject" in err.errors){
             if(err.errors.subject.properties.type==="required"){
               // subjectは空白禁止
-              result["result"] = 103;
+              result["result"] = EL.E_PRM_PROHIBITED.num;
               result["message"] = "subjectに空白は登録できません。詳細 => ";
               isMaxlength = false;
             }
           }
           if(isMaxlength){
             // 文字数超過
-            result["result"] = 102;
+            result["result"] = EL.E_PRM_SIZEOVER.num;
             result["message"] = "登録しようとしている文字数が超過しています。詳細 => ";
           }
         }else if(err.code === 11000){
           // 既に存在しているタイトルに変更しようとした
-          result["result"] = 200;
+          result["result"] = EL.E_SRH_HAVETITLE.num;
           result["message"] = "変更後に指定されたsubjectは、別に存在しています。詳細 => ";
         }else{
           // その他実行エラー
-          result["result"] = 500;
+          result["result"] = EL.E_RUN_DATABASE.num;
           result["message"] = "データベース実行時にエラーが発生しました。詳細 => ";
         }
         result["message"] += JSON.stringify(err);
@@ -326,7 +329,7 @@ router.put('/:subject', (req, res, next) => {
       }else{
         // DBに存在していないタイトルが更新対象に指定された
         if(docs.n === 0){
-          result["result"] = 300;
+          result["result"] = EL.E_SRH_NOTTERGET.num;
           result["message"] = `更新対象subject:"${req.params.subject}"はデータベースに存在しません`;
           systemLogger.error(`result: , message:${result["message"].replace(/\r?\n/g,'')}`);
         }
@@ -338,7 +341,7 @@ router.put('/:subject', (req, res, next) => {
 
   // 引数が足りていないためエラー
   let result = {
-    result: 100,
+    result: EL.E_PRM_NOTENOUGH.num,
     message: `有効な更新データが1つも指定されていません。`
   };
   systemLogger.error(`result:${result["result"]}, message:${result["message"]}`);
@@ -360,7 +363,7 @@ router.delete('/', (req, res) => {
   item.remove(query, err => {
     res.header('Content-Type', contentType);
     if (err){
-      result["result"] = 500;
+      result["result"] = EL.E_RUN_DATABASE.num;
       result["message"] = "データベース実行時にエラーが発生しました。詳細 => ";
       result["message"] += JSON.stringify(err);
       systemLogger.error(`result:${result["result"]}, message:${result["message"].replace(/\r?\n/g,'')}`);
@@ -382,7 +385,7 @@ router.delete('/:subject', (req, res) => {
   item.remove(query, err => {
     res.header('Content-Type', contentType);
     if (err){
-      result["result"] = 500;
+      result["result"] = EL.E_RUN_DATABASE.num;
       result["message"] = "データベース実行時にエラーが発生しました。詳細 => ";
       result["message"] += JSON.stringify(err);
       systemLogger.error(`result:${result["result"]}, message:${result["message"].replace(/\r?\n/g,'')}`);

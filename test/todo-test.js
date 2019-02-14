@@ -2,7 +2,7 @@ const expect = require('expect');
 const app = require('../app');
 const supertest = require('supertest').agent(app.listen());
 
-const async = require('async');
+const EL = require('../routes/errorlist');
 
 // API共通のレスポンス確認用
 const checkResponse = {
@@ -128,807 +128,854 @@ describe(`サポートAPIのチェック`, () => {
 });
 
 describe(`正常シーケンス(複数削除とタイトル一覧の条件は、複数取得と同じ処理なので動作保証。動作確認済み)`, () => {
-  before('事前に全件削除しておく', () => {
-    supertest.del('/todo')
-      .end((error, response) => {
-      if(error) {
-        return done(error);
-      }
+  before('事前に全件削除しておく', async () => {
+    await supertest.del('/todo')
+    .timeout({ response: 100000, deadline: 100000 })
+    .catch(err => { 
+      console.error(err);
+      throw err; 
     });
   });
-  it('登録', (done) => {
 
-      // リクエストを登録
-      let reglist = [];
+  it('登録', async () => {
+
       for(let item of todoData){
-        reglist.push(
-          supertest.post('/todo')
+          const response = await supertest.post('/todo')
           .type('form')
-          .send(item)
           .set('Accept', /application\/json/)
+          .timeout({ response: 100000, deadline: 100000 })
+          .send(item)
           .expect(200)
-          .end((error, response) => {
-            if(error) {
-              return done(error);
-            }
-            expect(response.body).toEqual(checkResponse);
-          })
-        )
-      }
-
-      // test実行
-      async.series(reglist,done());
-
+          .catch(err => { 
+            console.error(err);
+            throw err; 
+          });
+          expect(response.body).toEqual(checkResponse);
+        }
   });
-  it('全件取得', (done) => {
+
+  it('全件取得', async () => {
     // 登録出来たデータが正しいかチェック
-    supertest.get('/todo')
-      .expect(200)
-      .end((error, response) => {
-        if(error) {
-          return done(error);
-        }
-        expect(response.body.data.sort(compObject)).toEqual(todoData.sort(compObject));
-        done();
-      });
-  });
-  it('タイトル一覧取得', (done) => {
-    supertest.get('/todo/subjects')
-      .expect(200)
-      .end((error, response) => {
-        if(error) {
-          return done(error);
-        }
-        // 比較対象取り出し
-        let ref = [];
-        for(item of todoData){
-          ref.push(item.subject);
-        }
-        expect(response.body.data.sort(compArray)).toEqual(ref.sort(compArray));
-        done();
-      });
-  });
-  it('複数取得(done=true)', (done) => {
-    supertest.get('/todo?done=true')
-      .expect(200)
-      .end((error, response) => {
-        if(error) {
-          return done(error);
-        }
-        let check = JSON.parse(JSON.stringify(checkResponse));
-        check["data"] = {};
-        expect(response.body).toMatchObject({result:0});
-        expect(response.body).toHaveProperty("data");
-        expect(response.body.data.length).toBeGreaterThanOrEqual(1); // 1以上
-        for(let item of response.body.data){
-          expect(item).toMatchObject({done:true});
-        }
-        done();
-      });
-  });
-  it('複数取得(subject=te)', (done) => {
-    supertest.get('/todo?subject=te')
-      .expect(200)
-      .end((error, response) => {
-        if(error) {
-          return done(error);
-        }
-        let check = JSON.parse(JSON.stringify(checkResponse));
-        check["data"] = {};
-        expect(response.body).toMatchObject({result:0});
-        expect(response.body).toHaveProperty("data");
-        expect(response.body.data.length).toBeGreaterThanOrEqual(1); // 1以上
-        for(let item of response.body.data){
-          expect(item).toMatchObject({subject:expect.stringMatching(/te/)});
-        }
-        done();
-      });
-  });
-  it('複数取得(detail=123)', (done) => {
-    supertest.get('/todo?detail=123')
-      .expect(200)
-      .end((error, response) => {
-        if(error) {
-          return done(error);
-        }
-        let check = JSON.parse(JSON.stringify(checkResponse));
-        check["data"] = {};
-        expect(response.body).toMatchObject({result:0});
-        expect(response.body).toHaveProperty("data");
-        expect(response.body.data.length).toBeGreaterThanOrEqual(1); // 1以上
-        for(let item of response.body.data){
-          expect(item).toMatchObject({detail:expect.stringMatching(/123/)});
-        }
-        done();
-      });
-  });
-  it('複数取得(done=false&subject=xt)', (done) => {
-    supertest.get('/todo?false&subject=xt')
-      .expect(200)
-      .end((error, response) => {
-        if(error) {
-          return done(error);
-        }
-        let check = JSON.parse(JSON.stringify(checkResponse));
-        check["data"] = {};
-        expect(response.body).toMatchObject({result:0});
-        expect(response.body).toHaveProperty("data");
-        expect(response.body.data.length).toBeGreaterThanOrEqual(1); // 1以上
-        for(let item of response.body.data){
-          expect(item).toMatchObject({done:false,subject:expect.stringMatching(/xt/)});
-        }
-        done();
-      });
-  });
-  it('1件更新', (done) => {
-    let afterItem = {done:false, subject:"aftersubject", detail:"詳細書き換え後"};
-    supertest.put('/todo/beforesubject')
-    .type('form')
-    .send(afterItem)
-    .set('Accept', /application\/json/)
+    const response = await supertest.get('/todo')
+    .timeout({ response: 100000, deadline: 100000 })
     .expect(200)
-    .end((error, response) => {
-      if(error) {
-        return done(error);
-      }
-      expect(response.body).toEqual(checkResponse);
-      done();
+    .catch(err => { 
+      console.error(err);
+      throw err; 
     });
+
+    expect(response.body.data.sort(compObject)).toEqual(todoData.sort(compObject));
   });
 
-  it('1件取得', (done) => {
+  it('タイトル一覧取得', async () => {
+    const response = await supertest.get('/todo/subjects')
+    .timeout({ response: 100000, deadline: 100000 })
+    .expect(200)
+    .catch(err => { 
+      console.error(err);
+      throw err; 
+    });
+
+    // 比較対象取り出し
+    let ref = [];
+    for(item of todoData){
+      ref.push(item.subject);
+    }
+    expect(response.body.data.sort(compArray)).toEqual(ref.sort(compArray));
+
+  });
+
+  it('複数取得(done=true)', async () => {
+    const response = await supertest.get('/todo?done=true')
+    .timeout({ response: 100000, deadline: 100000 })
+    .expect(200)
+    .catch(err => { 
+      console.error(err);
+      throw err; 
+    });
+
+    let check = JSON.parse(JSON.stringify(checkResponse));
+    check["data"] = {};
+    expect(response.body).toMatchObject({result:0});
+    expect(response.body).toHaveProperty("data");
+    expect(response.body.data.length).toBeGreaterThanOrEqual(1); // 1以上
+    for(let item of response.body.data){
+      expect(item).toMatchObject({done:true});
+    }
+  });
+
+  it('複数取得(subject=te)', async () => {
+    const response = await supertest.get('/todo?subject=te')
+    .timeout({ response: 100000, deadline: 100000 })
+    .expect(200)
+    .catch(err => { 
+      console.error(err);
+      throw err; 
+    });
+    
+    let check = JSON.parse(JSON.stringify(checkResponse));
+    check["data"] = {};
+    expect(response.body).toMatchObject({result:0});
+    expect(response.body).toHaveProperty("data");
+    expect(response.body.data.length).toBeGreaterThanOrEqual(1); // 1以上
+    for(let item of response.body.data){
+      expect(item).toMatchObject({subject:expect.stringMatching(/te/)});
+    }
+  });
+
+  it('複数取得(detail=123)', async () => {
+    const response = await supertest.get('/todo?detail=123')
+    .timeout({ response: 100000, deadline: 100000 })
+    .expect(200)
+    .catch(err => { 
+      console.error(err);
+      throw err; 
+    });
+
+    let check = JSON.parse(JSON.stringify(checkResponse));
+    check["data"] = {};
+    expect(response.body).toMatchObject({result:0});
+    expect(response.body).toHaveProperty("data");
+    expect(response.body.data.length).toBeGreaterThanOrEqual(1); // 1以上
+    for(let item of response.body.data){
+      expect(item).toMatchObject({detail:expect.stringMatching(/123/)});
+    }
+  });
+  it('複数取得(done=false&subject=xt)', async () => {
+    const response = await supertest.get('/todo?false&subject=xt')
+    .timeout({ response: 100000, deadline: 100000 })
+    .expect(200)
+    .catch(err => { 
+      console.error(err);
+      throw err; 
+    });
+
+    let check = JSON.parse(JSON.stringify(checkResponse));
+    check["data"] = {};
+    expect(response.body).toMatchObject({result:0});
+    expect(response.body).toHaveProperty("data");
+    expect(response.body.data.length).toBeGreaterThanOrEqual(1); // 1以上
+    for(let item of response.body.data){
+      expect(item).toMatchObject({done:false,subject:expect.stringMatching(/xt/)});
+    }
+  });
+  it('1件更新', async () => {
     let afterItem = {done:false, subject:"aftersubject", detail:"詳細書き換え後"};
-    supertest.get('/todo/aftersubject')
-      .expect(200)
-      .end((error, response) => {
-        if(error) {
-          return done(error);
-        }
-        let check = JSON.parse(JSON.stringify(checkResponse));
-        check["data"] = afterItem;
-        expect(response.body).toEqual(check);
-        done();
-      });
+    const response = await supertest.put('/todo/beforesubject')
+    .type('form')
+    .set('Accept', /application\/json/)
+    .timeout({ response: 100000, deadline: 100000 })
+    .send(afterItem)
+    .expect(200)
+    .catch(err => { 
+      console.error(err);
+      throw err; 
+    });
+    
+    expect(response.body).toEqual(checkResponse);
   });
 
-  it('登録(上書き)', (done) => {
+  it('1件取得', async () => {
+    let afterItem = {done:false, subject:"aftersubject", detail:"詳細書き換え後"};
+    const response = await supertest.get('/todo/aftersubject')
+    .timeout({ response: 100000, deadline: 100000 })
+    .expect(200)
+    .catch(err => { 
+      console.error(err);
+      throw err; 
+    });
+
+    let check = JSON.parse(JSON.stringify(checkResponse));
+    check["data"] = afterItem;
+    expect(response.body).toEqual(check);
+  });
+
+  it('登録(上書き)', async () => {
     let afterItem = {done:false, subject:"test1", detail:"詳細書き換え後2"};
-    supertest.post('/todo')
+    const response = await supertest.post('/todo')
     .type('form')
-    .send(afterItem)
     .set('Accept', /application\/json/)
+    .timeout({ response: 100000, deadline: 100000 })
+    .send(afterItem)
     .expect(200)
-    .end((error, response) => {
-      if(error) {
-        return done(error);
-      }
-      expect(response.body).toEqual(checkResponse);
+    .catch(err => { 
+      console.error(err);
+      throw err; 
+    });    
+    expect(response.body).toEqual(checkResponse);
 
-      // 更新確認
-      supertest.get('/todo/test1')
-      .expect(200)
-      .end((error, response) => {
-        if(error) {
-          return done(error);
-        }
-        let check = JSON.parse(JSON.stringify(checkResponse));
-        check["data"] = afterItem;
-        expect(response.body).toEqual(check);
-        done();
-      });
+    // 更新確認
+    const result = await supertest.get('/todo/test1')
+    .expect(200)
+    .catch(err => { 
+      console.error(err);
+      throw err; 
     });
+    let check = JSON.parse(JSON.stringify(checkResponse));
+    check["data"] = afterItem;
+    expect(result.body).toEqual(check);
   });
 
-  it('1件削除', (done) => {
-    supertest.del('/todo/aftersubject')
-      .expect(200)
-      .end((error, response) => {
-        if(error) {
-          return done(error);
-        }
-        expect(response.body).toEqual(checkResponse);
+  it('1件削除', async () => {
+    const response = await supertest.del('/todo/aftersubject')
+    .timeout({ response: 100000, deadline: 100000 })
+    .expect(200)
+    .catch(err => { 
+      console.error(err);
+      throw err; 
+    });
+    expect(response.body).toEqual(checkResponse);
 
-        // 取得して消えていることを確認
-        supertest.get('/todo/aftersubject')
-        .expect(200)
-        .end((error, response) => {
-          if(error) {
-            return done(error);
-          }
-          let check = JSON.parse(JSON.stringify(checkResponse));
-          check["data"] = {};
-          expect(response.body).toEqual(check);
-          done();
-        });
-      });
-  });
-  it('全件削除', (done) => {
-    supertest.del('/todo')
-      .expect(200)
-      .end((error, response) => {
-        if(error) {
-          return done(error);
-        }
-        expect(response.body).toEqual(checkResponse);
-
-        // 取得して消えていることを確認
-        supertest.get('/todo')
-        .expect(200)
-        .end((error, response) => {
-          if(error) {
-            return done(error);
-          }
-          let check = JSON.parse(JSON.stringify(checkResponse));
-          check["data"] = [];
-          expect(response.body).toEqual(check);
-          done();
-        });
-      });
+    // 取得して消えていることを確認
+    const result = await supertest.get('/todo/aftersubject')
+    .timeout({ response: 100000, deadline: 100000 })
+    .expect(200)
+    .catch(err => { 
+      console.error(err);
+      throw err; 
+    });
+    let check = JSON.parse(JSON.stringify(checkResponse));
+    check["data"] = {};
+    expect(result.body).toEqual(check);
   });
 
+  it('全件削除', async () => {
+    const response = await supertest.del('/todo')
+    .timeout({ response: 100000, deadline: 100000 })
+    .expect(200)
+    .catch(err => { 
+      console.error(err);
+      throw err; 
+    });
+    expect(response.body).toEqual(checkResponse);
 
+    // 取得して消えていることを確認
+    const result = await supertest.get('/todo')
+    .timeout({ response: 100000, deadline: 100000 })
+    .expect(200)
+    .catch(err => { 
+      console.error(err);
+      throw err; 
+    });
+    let check = JSON.parse(JSON.stringify(checkResponse));
+    check["data"] = [];
+    expect(result.body).toEqual(check);
+  });
 });
 
 describe(`POST 登録のエラー、準正常系テスト`, () => {
-  it('doneなし、subject数値', (done) => {
-    supertest.post('/todo')
+  it('doneなし、subject数値', async () => {
+    const response = await supertest.post('/todo')
     .type('form')
-    .send({subject:"123",detail:""})
     .set('Accept', /application\/json/)
+    .timeout({ response: 100000, deadline: 100000 })
+    .send({subject:123,detail:""})
     .expect(200)
-    .end((error, response) => {
-      if(error) {
-        return done(error);
-      }
-      expect(response.body).toEqual(checkResponse);
-
-       // 更新されているか確認
-      supertest.get('/todo/123')
-        .expect(200)
-        .end((error, response) => {
-          if(error) {
-            return done(error);
-          }
-          let check = JSON.parse(JSON.stringify(checkResponse));
-          check["data"] = {done:false,subject:"123",detail:""};
-          expect(response.body).toEqual(check);
-          done();
-        });
-
+    .catch(err => { 
+      console.error(err);
+      throw err; 
     });
+    expect(response.body).toEqual(checkResponse);
+
+    // 更新されているか確認
+    const result = await supertest.get('/todo/123')
+    .timeout({ response: 100000, deadline: 100000 })
+    .expect(200)
+    .catch(err => { 
+      console.error(err);
+      throw err; 
+    });
+    let check = JSON.parse(JSON.stringify(checkResponse));
+    check["data"] = {done:false,subject:"123",detail:""};
+    expect(result.body).toEqual(check);
+
   });
-  it('done文字列＋不正文字', (done) => {
-    supertest.post('/todo')
+
+  it('done文字列＋不正文字', async () => {
+    const response = await supertest.post('/todo')
     .type('form')
+    .set('Accept', /application\/json/)
+    .timeout({ response: 100000, deadline: 100000 })
     .send({done:"aaa",subject:123,detail:""})
-    .set('Accept', /application\/json/)
     .expect(200)
-    .end((error, response) => {
-      if(error) {
-        return done(error);
-      }
-      expect(response.body.result).toEqual(101);
-      done();
+    .catch(err => { 
+      console.error(err);
+      throw err; 
     });
+    expect(response.body.result).toEqual(EL.E_PRM_TYPECAST.num);
   });
-  it('done文字列＋Boolean句', (done) => {
-    supertest.post('/todo')
-    .type('form')
-    .send({done:"true",subject:123,detail:""})
-    .set('Accept', /application\/json/)
-    .expect(200)
-    .end((error, response) => {
-      if(error) {
-        return done(error);
-      }
-      expect(response.body).toEqual(checkResponse);
 
-       // 更新されているか確認
-      supertest.get('/todo/123')
-        .expect(200)
-        .end((error, response) => {
-          if(error) {
-            return done(error);
-          }
-          let check = JSON.parse(JSON.stringify(checkResponse));
-          check["data"] = {done:true,subject:"123",detail:""};
-          expect(response.body).toEqual(check);
-          done();
-        });
-   });
-  });
-  it('subjectなし', (done) => {
-    supertest.post('/todo')
+  it('done文字列＋Boolean句', async () => {
+    const response = await supertest.post('/todo')
     .type('form')
+    .set('Accept', /application\/json/)
+    .timeout({ response: 100000, deadline: 100000 })
+    .send({done:"true",subject:123,detail:""})
+    .expect(200)
+    .catch(err => { 
+      console.error(err);
+      throw err; 
+    });
+    expect(response.body).toEqual(checkResponse);
+
+    // 更新されているか確認
+    const result = await supertest.get('/todo/123')
+    .timeout({ response: 100000, deadline: 100000 })
+    .expect(200)
+    .catch(err => { 
+      console.error(err);
+      throw err; 
+    });
+    let check = JSON.parse(JSON.stringify(checkResponse));
+    check["data"] = {done:true,subject:"123",detail:""};
+    expect(result.body).toEqual(check);
+  
+  });
+
+  it('subjectなし', async () => {
+    const response = await supertest.post('/todo')
+    .type('form')
+    .set('Accept', /application\/json/)
+    .timeout({ response: 100000, deadline: 100000 })
     .send({done:"true",detail:""})
-    .set('Accept', /application\/json/)
     .expect(200)
-    .end((error, response) => {
-      if(error) {
-        return done(error);
-      }
-      expect(response.body.result).toEqual(100);
-      done();
+    .catch(err => { 
+      console.error(err);
+      throw err; 
     });
+    expect(response.body.result).toEqual(EL.E_PRM_NOTENOUGH.num);
   });
-  it('detailなし', (done) => {
-    supertest.post('/todo')
+
+  it('detailなし', async () => {
+    const response = await supertest.post('/todo')
     .type('form')
+    .set('Accept', /application\/json/)
+    .timeout({ response: 100000, deadline: 100000 })
     .send({done:"true",subject:"test20"})
-    .set('Accept', /application\/json/)
     .expect(200)
-    .end((error, response) => {
-      if(error) {
-        return done(error);
-      }
-      expect(response.body.result).toEqual(100);
-      done();
+    .catch(err => { 
+      console.error(err);
+      throw err; 
     });
+    expect(response.body.result).toEqual(EL.E_PRM_NOTENOUGH.num);
   });
-  it('引数なし', (done) => {
-    supertest.post('/todo')
+
+  it('引数なし', async () => {
+    const response = await supertest.post('/todo')
     .type('form')
+    .set('Accept', /application\/json/)
+    .timeout({ response: 100000, deadline: 100000 })
     .send({})
-    .set('Accept', /application\/json/)
     .expect(200)
-    .end((error, response) => {
-      if(error) {
-        return done(error);
-      }
-      expect(response.body.result).toEqual(100);
-      done();
+    .catch(err => { 
+      console.error(err);
+      throw err; 
     });
+    expect(response.body.result).toEqual(EL.E_PRM_NOTENOUGH.num);
   });
-  it('subject空白', (done) => {
-    supertest.post('/todo')
+
+  it('subject空白', async () => {
+    const response = await supertest.post('/todo')
     .type('form')
+    .set('Accept', /application\/json/)
+    .timeout({ response: 100000, deadline: 100000 })
     .send({done:"false",subject:"",detail:""})
-    .set('Accept', /application\/json/)
     .expect(200)
-    .end((error, response) => {
-      if(error) {
-        return done(error);
-      }
-      expect(response.body.result).toEqual(103);
-      done();
+    .catch(err => { 
+      console.error(err);
+      throw err; 
     });
+    expect(response.body.result).toEqual(EL.E_PRM_PROHIBITED.num);
   });
-  it('subjectがsubjects', (done) => {
-    supertest.post('/todo')
+
+  it('subjectがsubjects', async () => {
+    const response = await supertest.post('/todo')
     .type('form')
-    .send({done:"false",subject:"subjects",detail:""})
     .set('Accept', /application\/json/)
+    .timeout({ response: 100000, deadline: 100000 })
+    .send({done:"false",subject:"subjects",detail:""})
     .expect(200)
-    .end((error, response) => {
-      if(error) {
-        return done(error);
-      }
-      expect(response.body.result).toEqual(103);
-      done();
+    .catch(err => { 
+      console.error(err);
+      throw err; 
     });
+    expect(response.body.result).toEqual(EL.E_PRM_PROHIBITED.num);
   });
-  it('subject50文字', (done) => {
+
+  it('subject50文字', async () => {
     let testdata = "";
     for(let i=0; i<50; i++){
         testdata += i % 10;
     }
-    supertest.post('/todo')
+    const response = await supertest.post('/todo')
     .type('form')
-    .send({done:"false",subject:testdata,detail:""})
     .set('Accept', /application\/json/)
+    .timeout({ response: 100000, deadline: 100000 })
+    .send({done:"false",subject:testdata,detail:""})
     .expect(200)
-    .end((error, response) => {
-      if(error) {
-        return done(error);
-      }
-      expect(response.body).toEqual(checkResponse);
-
-      // 更新されているか確認
-      supertest.get(`/todo/${testdata}`)
-        .expect(200)
-        .end((error, response) => {
-          if(error) {
-            return done(error);
-          }
-          let check = JSON.parse(JSON.stringify(checkResponse));
-          check["data"] = {done:false,subject:testdata,detail:""};
-          expect(response.body).toEqual(check);
-          done();
-        });
+    .catch(err => { 
+      console.error(err);
+      throw err; 
     });
+    expect(response.body).toEqual(checkResponse);
+
+    // 更新されているか確認
+    const result = await supertest.get(`/todo/${testdata}`)
+    .expect(200)
+    .catch(err => { 
+      console.error(err);
+      throw err; 
+    });
+    let check = JSON.parse(JSON.stringify(checkResponse));
+    check["data"] = {done:false,subject:testdata,detail:""};
+    expect(result.body).toEqual(check);
   });
-  it('subject51文字', (done) => {
+
+  it('subject51文字', async () => {
     let testdata = "";
     for(let i=0; i<51; i++){
         testdata += i % 10;
     }
-    supertest.post('/todo')
+    const response = await supertest.post('/todo')
     .type('form')
-    .send({done:"false",subject:testdata,detail:""})
     .set('Accept', /application\/json/)
+    .timeout({ response: 100000, deadline: 100000 })
+    .send({done:"false",subject:testdata,detail:""})
     .expect(200)
-    .end((error, response) => {
-      if(error) {
-        return done(error);
-      }
-      expect(response.body.result).toEqual(102);
-      done();
+    .catch(err => { 
+      console.error(err);
+      throw err; 
     });
+    expect(response.body.result).toEqual(EL.E_PRM_SIZEOVER.num);
   });
-  it('detail255文字', (done) => {
+
+  it('detail255文字', async () => {
     let testdata = "";
     for(let i=0; i<255; i++){
         testdata += i % 10;
     }
-    supertest.post('/todo')
+    const response = await supertest.post('/todo')
     .type('form')
-    .send({done:"false",subject:"extr5",detail:testdata})
     .set('Accept', /application\/json/)
+    .timeout({ response: 100000, deadline: 100000 })
+    .send({done:"false",subject:"extr5",detail:testdata})
     .expect(200)
-    .end((error, response) => {
-      if(error) {
-        return done(error);
-      }
-
-      expect(response.body).toEqual(checkResponse);
-
-      // 更新されているか確認
-      supertest.get('/todo/extr5')
-        .expect(200)
-        .end((error, response) => {
-          if(error) {
-            return done(error);
-          }
-          let check = JSON.parse(JSON.stringify(checkResponse));
-          check["data"] = {done:false,subject:"extr5",detail:testdata};
-          expect(response.body).toEqual(check);
-          done();
-        });
+    .catch(err => { 
+      console.error(err);
+      throw err; 
     });
+    expect(response.body).toEqual(checkResponse);
+
+    // 更新されているか確認
+    const result = await supertest.get('/todo/extr5')
+    .expect(200)
+    .catch(err => { 
+      console.error(err);
+      throw err; 
+    });
+    let check = JSON.parse(JSON.stringify(checkResponse));
+    check["data"] = {done:false,subject:"extr5",detail:testdata};
+    expect(result.body).toEqual(check);
   });
-  it('detail256文字', (done) => {
+
+  it('detail256文字', async () => {
     let testdata = "";
     for(let i=0; i<256; i++){
         testdata += i % 10;
     }
-    supertest.post('/todo')
+    const response = await supertest.post('/todo')
     .type('form')
-    .send({done:"false",subject:"extr5",detail:testdata})
     .set('Accept', /application\/json/)
+    .timeout({ response: 100000, deadline: 100000 })
+    .send({done:"false",subject:"extr5",detail:testdata})
     .expect(200)
-    .end((error, response) => {
-      if(error) {
-        return done(error);
-      }
-      expect(response.body.result).toEqual(102);
-      done();
+    .catch(err => { 
+      console.error(err);
+      throw err; 
     });
+    expect(response.body.result).toEqual(EL.E_PRM_SIZEOVER.num);
   });
 
-  after('最後にテストデータを削除しておく', () => {
-    supertest.del('/todo')
-      .end((error, response) => {
-      if(error) {
-        return done(error);
-      }
+  after('最後にテストデータを削除しておく', async () => {
+    const response = await supertest.del('/todo')
+    .timeout({ response: 100000, deadline: 100000 })
+    .expect(200)
+    .catch(err => { 
+      console.error(err);
+      throw err; 
     });
+    expect(response.body).toEqual(checkResponse);
   });
 
 });
 
 describe(`PUT 更新のエラー、準正常系テスト`, () => {
-  before('事前にテストデータを登録しておく', () => {
+  before('事前にテストデータを登録しておく', async () => {
     // Todoを登録
     for(let item of todoData){
-      supertest.post('/todo')
+      const response = await supertest.post('/todo')
       .type('form')
-      .send(item)
       .set('Accept', /application\/json/)
+      .timeout({ response: 100000, deadline: 100000 })
+      .send(item)
       .expect(200)
-      .end((error, response) => {
-        if(error) {
-          return done(error);
-        }
-        expect(response.body).toEqual(checkResponse);
+      .catch(err => { 
+        console.error(err);
+        throw err; 
       });
+      expect(response.body).toEqual(checkResponse);
     }
   });
-  it('更新対象指定なし', (done) => {
-    supertest.put('/todo')
+
+  it('更新対象指定なし', async () => {
+    const response = await supertest.put('/todo')
     .type('form')
+    .set('Accept', /application\/json/)
+    .timeout({ response: 100000, deadline: 100000 })
     .send({done:"aaa",subject:123,detail:""})
-    .set('Accept', /application\/json/)
     .expect(200)
-    .end((error, response) => {
-      if(error) {
-        return done(error);
-      }
-      expect(response.body.result).toEqual(100);
-      done();
+    .catch(err => { 
+      console.error(err);
+      throw err; 
     });
+    expect(response.body.result).toEqual(EL.E_PRM_NOTENOUGH.num);
   });
-  it('存在しているsubjectに変更しようとした', (done) => {
-    supertest.put('/todo/test1')
+
+  it('存在しているsubjectに変更しようとした', async () => {
+    const response = await supertest.put('/todo/test1')
     .type('form')
+    .set('Accept', /application\/json/)
+    .timeout({ response: 100000, deadline: 100000 })
     .send({done:true,subject:"test2",detail:""})
-    .set('Accept', /application\/json/)
     .expect(200)
-    .end((error, response) => {
-      if(error) {
-        return done(error);
-      }
-      expect(response.body.result).toEqual(200);
-      done();
+    .catch(err => { 
+      console.error(err);
+      throw err; 
     });
+    expect(response.body.result).toEqual(EL.E_SRH_HAVETITLE.num);
   });
-  it('doneなし、subject数値', (done) => {
-    supertest.put('/todo/test1')
+
+  it('doneなし、subject数値', async () => {
+    const response = await supertest.put('/todo/test1')
     .type('form')
+    .set('Accept', /application\/json/)
+    .timeout({ response: 100000, deadline: 100000 })
     .send({subject:123,detail:""})
-    .set('Accept', /application\/json/)
     .expect(200)
-    .end((error, response) => {
-      if(error) {
-        return done(error);
-      }
-      expect(response.body).toEqual(checkResponse);
-
-      // 更新されているか確認
-      supertest.get('/todo/123')
-        .expect(200)
-        .end((error, response) => {
-          if(error) {
-            return done(error);
-          }
-          let check = JSON.parse(JSON.stringify(checkResponse));
-          check["data"] = {done:true,subject:"123",detail:""};
-          expect(response.body).toEqual(check);
-          done();
-        });
+    .catch(err => { 
+      console.error(err);
+      throw err; 
     });
+    expect(response.body).toEqual(checkResponse);
+
+    // 更新されているか確認
+    const result = await supertest.get('/todo/123')
+    .timeout({ response: 100000, deadline: 100000 })
+    .expect(200)
+    .catch(err => { 
+      console.error(err);
+      throw err; 
+    });
+    let check = JSON.parse(JSON.stringify(checkResponse));
+    check["data"] = {done:true,subject:"123",detail:""};
+    expect(result.body).toEqual(check);
   });
-  it('存在しないsubjectを更新しようとする', (done) => {
-    supertest.put('/todo/cccc')
+
+  it('存在しないsubjectを更新しようとする', async () => {
+    const response = await supertest.put('/todo/cccc')
     .type('form')
+    .set('Accept', /application\/json/)
+    .timeout({ response: 100000, deadline: 100000 })
     .send({done:true,subject:"push",detail:""})
-    .set('Accept', /application\/json/)
     .expect(200)
-    .end((error, response) => {
-      if(error) {
-        return done(error);
-      }
-      expect(response.body.result).toEqual(300);
-      done();
+    .catch(err => { 
+      console.error(err);
+      throw err; 
     });
+    expect(response.body.result).toEqual(EL.E_SRH_NOTTERGET.num);
   });
-  it('done文字列＋不正文字', (done) => {
-    supertest.put('/todo/test2')
+  
+  it('done文字列＋不正文字', async () => {
+    const response = await supertest.put('/todo/test2')
     .type('form')
+    .set('Accept', /application\/json/)
+    .timeout({ response: 100000, deadline: 100000 })
     .send({done:"aaa",subject:567,detail:""})
-    .set('Accept', /application\/json/)
     .expect(200)
-    .end((error, response) => {
-      if(error) {
-        return done(error);
-      }
-      expect(response.body.result).toEqual(101);
-      done();
+    .catch(err => { 
+      console.error(err);
+      throw err; 
     });
+    expect(response.body.result).toEqual(EL.E_PRM_TYPECAST.num);
   });
-  it('done文字列＋Boolean句', (done) => {
-    supertest.put('/todo/test2')
+
+  it('done文字列＋Boolean句', async () => {
+    const response = await supertest.put('/todo/test2')
     .type('form')
+    .set('Accept', /application\/json/)
+    .timeout({ response: 100000, deadline: 100000 })
     .send({done:"true",subject:567,detail:""})
-    .set('Accept', /application\/json/)
     .expect(200)
-    .end((error, response) => {
-      if(error) {
-        return done(error);
-      }
-      expect(response.body).toEqual(checkResponse);
-
-      // 更新されているか確認
-      supertest.get('/todo/567')
-        .expect(200)
-        .end((error, response) => {
-          if(error) {
-            return done(error);
-          }
-          let check = JSON.parse(JSON.stringify(checkResponse));
-          check["data"] = {done:true,subject:"567",detail:""};
-          expect(response.body).toEqual(check);
-          done();
-        });
+    .catch(err => { 
+      console.error(err);
+      throw err; 
     });
+    expect(response.body).toEqual(checkResponse);
+
+    // 更新されているか確認
+    const result = await supertest.get('/todo/567')
+    .timeout({ response: 100000, deadline: 100000 })
+    .expect(200)
+    .catch(err => { 
+      console.error(err);
+      throw err; 
+    });
+    let check = JSON.parse(JSON.stringify(checkResponse));
+    check["data"] = {done:true,subject:"567",detail:""};
+    expect(result.body).toEqual(check);
   });
-  it('subjectなし', (done) => {
-    supertest.put('/todo/test3')
+  it('subjectなし', async () => {
+    const response = await supertest.put('/todo/test3')
     .type('form')
+    .set('Accept', /application\/json/)
+    .timeout({ response: 100000, deadline: 100000 })
     .send({done:"true",detail:"部分更新できる"})
-    .set('Accept', /application\/json/)
     .expect(200)
-    .end((error, response) => {
-      if(error) {
-        return done(error);
-      }
-      expect(response.body).toEqual(checkResponse);
-
-      // 更新されているか確認
-      supertest.get('/todo/test3')
-        .expect(200)
-        .end((error, response) => {
-          if(error) {
-            return done(error);
-          }
-          let check = JSON.parse(JSON.stringify(checkResponse));
-          check["data"] = {done:true,subject:"test3",detail:"部分更新できる"};
-          expect(response.body).toEqual(check);
-          done();
-        });
+    .catch(err => { 
+      console.error(err);
+      throw err; 
     });
+    expect(response.body).toEqual(checkResponse);
+
+    // 更新されているか確認
+    const result = await supertest.get('/todo/test3')
+    .expect(200)
+    .catch(err => { 
+      console.error(err);
+      throw err; 
+    });
+    let check = JSON.parse(JSON.stringify(checkResponse));
+    check["data"] = {done:true,subject:"test3",detail:"部分更新できる"};
+    expect(result.body).toEqual(check);
+
   });
-  it('detailなし', (done) => {
-    supertest.put('/todo/extr1')
+
+  it('detailなし', async () => {
+    const response = await supertest.put('/todo/extr1')
     .type('form')
+    .set('Accept', /application\/json/)
+    .timeout({ response: 100000, deadline: 100000 })
     .send({done:"true",subject:"extr10"})
-    .set('Accept', /application\/json/)
     .expect(200)
-    .end((error, response) => {
-      if(error) {
-        return done(error);
-      }
-      expect(response.body).toEqual(checkResponse);
+    .catch(err => { 
+      console.error(err);
+      throw err; 
+    });
 
-      // 更新されているか確認
-      supertest.get('/todo/extr10')
-      .expect(200)
-      .end((error, response) => {
-        if(error) {
-          return done(error);
-        }
-        let check = JSON.parse(JSON.stringify(checkResponse));
-        check["data"] = {done:true,subject:"extr10",detail:"今日は晴れのち曇り"};
-        expect(response.body).toEqual(check);
-        done();
-      });
+    expect(response.body).toEqual(checkResponse);
+
+    // 更新されているか確認
+    const result = await supertest.get('/todo/extr10')
+    .timeout({ response: 100000, deadline: 100000 })
+    .expect(200)
+    .catch(err => { 
+      console.error(err);
+      throw err; 
     });
+    let check = JSON.parse(JSON.stringify(checkResponse));
+    check["data"] = {done:true,subject:"extr10",detail:"今日は晴れのち曇り"};
+    expect(result.body).toEqual(check);
   });
-  it('引数なし', (done) => {
-    supertest.put('/todo/extr2')
+
+  it('引数なし', async () => {
+    const response = await supertest.put('/todo/extr2')
     .type('form')
+    .set('Accept', /application\/json/)
+    .timeout({ response: 100000, deadline: 100000 })
     .send({})
-    .set('Accept', /application\/json/)
     .expect(200)
-    .end((error, response) => {
-      if(error) {
-        return done(error);
-      }
-      expect(response.body.result).toEqual(100);
+    .catch(err => { 
+      console.error(err);
+      throw err; 
     });
-    done();
+      expect(response.body.result).toEqual(EL.E_PRM_NOTENOUGH.num);
   });
-  it('subject空白', (done) => {
-    supertest.put('/todo/extr2')
+
+  it('subject空白', async () => {
+    const response = await supertest.put('/todo/extr2')
     .type('form')
+    .set('Accept', /application\/json/)
+    .timeout({ response: 100000, deadline: 100000 })
     .send({done:"false",subject:"",detail:""})
-    .set('Accept', /application\/json/)
     .expect(200)
-    .end((error, response) => {
-      if(error) {
-        return done(error);
-      }
-      expect(response.body.result).toEqual(103);
-      done();
+    .catch(err => { 
+      console.error(err);
+      throw err; 
     });
+    expect(response.body.result).toEqual(EL.E_PRM_PROHIBITED.num);
   });
-  it('subjectがsubjects', (done) => {
-    supertest.put('/todo/extr2')
+
+  it('subjectがsubjects', async () => {
+    const response = await supertest.put('/todo/extr2')
     .type('form')
-    .send({done:"false",subject:"subjects",detail:""})
     .set('Accept', /application\/json/)
+    .timeout({ response: 100000, deadline: 100000 })
+    .send({done:"false",subject:"subjects",detail:""})
     .expect(200)
-    .end((error, response) => {
-      if(error) {
-        return done(error);
-      }
-      expect(response.body.result).toEqual(103);
-      done();
+    .catch(err => { 
+      console.error(err);
+      throw err; 
     });
+    expect(response.body.result).toEqual(EL.E_PRM_PROHIBITED.num);
   });
-  it('subject50文字', (done) => {
+
+  it('subject50文字', async () => {
     let testdata = "";
     for(let i=0; i<50; i++){
         testdata += i % 10;
     }
-    supertest.put('/todo/extr2')
+    const response = await supertest.put('/todo/extr2')
     .type('form')
-    .send({done:"false",subject:testdata,detail:""})
     .set('Accept', /application\/json/)
+    .timeout({ response: 100000, deadline: 100000 })
+    .send({done:"false",subject:testdata,detail:""})
     .expect(200)
-    .end((error, response) => {
-      if(error) {
-        return done(error);
-      }
-      expect(response.body).toEqual(checkResponse);
-
-      // 更新されているか確認
-      supertest.get(`/todo/${testdata}`)
-        .expect(200)
-        .end((error, response) => {
-          if(error) {
-            return done(error);
-          }
-          let check = JSON.parse(JSON.stringify(checkResponse));
-          check["data"] = {done:false,subject:testdata,detail:""};
-          expect(response.body).toEqual(check);
-          done();
-        });
+    .catch(err => { 
+      console.error(err);
+      throw err; 
     });
+    expect(response.body).toEqual(checkResponse);
+
+    // 更新されているか確認
+    const result = await supertest.get(`/todo/${testdata}`)
+    .expect(200)
+    .catch(err => { 
+      console.error(err);
+      throw err; 
+    });
+    let check = JSON.parse(JSON.stringify(checkResponse));
+    check["data"] = {done:false,subject:testdata,detail:""};
+    expect(result.body).toEqual(check);
   });
-  it('subject51文字', (done) => {
+
+  it('subject51文字', async () => {
     let testdata = "";
     for(let i=0; i<51; i++){
         testdata += i % 10;
     }
-    supertest.put('/todo/extr2')
+    const response = await supertest.put('/todo/extr2')
     .type('form')
-    .send({done:"false",subject:testdata,detail:""})
     .set('Accept', /application\/json/)
+    .timeout({ response: 100000, deadline: 100000 })
+    .send({done:"false",subject:testdata,detail:""})
     .expect(200)
-    .end((error, response) => {
-      if(error) {
-        return done(error);
-      }
-      expect(response.body.result).toEqual(102);
-      done();
+    .catch(err => { 
+      console.error(err);
+      throw err; 
     });
+    expect(response.body.result).toEqual(EL.E_PRM_SIZEOVER.num);
   });
-  it('detail255文字', (done) => {
+
+  it('detail255文字', async () => {
     let testdata = "";
     for(let i=0; i<255; i++){
         testdata += i % 10;
     }
-    supertest.put('/todo/extr10')
+    const response = await supertest.put('/todo/extr10')
     .type('form')
-    .send({done:"false",subject:"extr10",detail:testdata})
     .set('Accept', /application\/json/)
+    .timeout({ response: 100000, deadline: 100000 })
+    .send({done:"false",subject:"extr10",detail:testdata})
     .expect(200)
-    .end((error, response) => {
-      if(error) {
-        return done(error);
-      }
-      expect(response.body).toEqual(checkResponse);
-
-      // 更新されているか確認
-      supertest.get('/todo/extr10')
-        .expect(200)
-        .end((error, response) => {
-          if(error) {
-            return done(error);
-          }
-          let check = JSON.parse(JSON.stringify(checkResponse));
-          check["data"] = {done:false,subject:"extr10",detail:testdata};
-          expect(response.body).toEqual(check);
-          done();
-        });
+    .catch(err => { 
+      console.error(err);
+      throw err; 
     });
+    expect(response.body).toEqual(checkResponse);
+
+    // 更新されているか確認
+    const result = await supertest.get('/todo/extr10')
+    .timeout({ response: 100000, deadline: 100000 })
+    .expect(200)
+    .catch(err => { 
+      console.error(err);
+      throw err; 
+    });
+    let check = JSON.parse(JSON.stringify(checkResponse));
+    check["data"] = {done:false,subject:"extr10",detail:testdata};
+    expect(result.body).toEqual(check);
+
   });
-  it('detail256文字', (done) => {
+
+  it('detail256文字', async () => {
     let testdata = "";
     for(let i=0; i<256; i++){
         testdata += i % 10;
     }
-    supertest.put('/todo/extr10')
+    const response = await supertest.put('/todo/extr10')
     .type('form')
-    .send({done:"false",subject:"extr10",detail:testdata})
     .set('Accept', /application\/json/)
+    .timeout({ response: 100000, deadline: 100000 })
+    .send({done:"false",subject:"extr10",detail:testdata})
     .expect(200)
-    .end((error, response) => {
-      if(error) {
-        return done(error);
-      }
-      expect(response.body.result).toEqual(102);
-      done();
+    .catch(err => { 
+      console.error(err);
+      throw err; 
     });
+    expect(response.body.result).toEqual(EL.E_PRM_SIZEOVER.num);
   });
+
+  after('最後にテストデータを削除して、サンプルデータを追加', async () => {
+    const response = await supertest.del('/todo')
+    .timeout({ response: 100000, deadline: 100000 })
+    .expect(200)
+    .catch(err => { 
+      console.error(err);
+      throw err; 
+    });
+    expect(response.body).toEqual(checkResponse);
+
+    const presetdata = [
+      {
+        subject:"お母さんのお使い",
+        detail:"スーパーへ。牛肉200g 牛乳3本",
+        done:false
+      },
+      {
+        subject:"お父さんのお使い",
+        detail:"コンビニ。醤油1本",
+        done:true
+      },
+      {
+        subject:"国語の宿題",
+        detail:"漢字ドリル32〜43",
+        done:false
+      },
+      {
+        subject:"算数の宿題",
+        detail:"計算カード、計算スキルノート14〜22",
+        done:false
+      },
+      {
+        subject:"草むしり",
+        detail:"2/13 17:00までに庭の草むしりをする約束",
+        done:true
+      }      
+    ]
+
+    for(let item of presetdata){
+      const response = await supertest.post('/todo')
+      .type('form')
+      .set('Accept', /application\/json/)
+      .timeout({ response: 100000, deadline: 100000 })
+      .send(item)
+      .expect(200)
+      .catch(err => { 
+        console.error(err);
+        throw err; 
+      });
+      expect(response.body).toEqual(checkResponse);
+    }
+  });
+
 });

@@ -32,7 +32,7 @@
 ### ◆REST-API起動コマンド
   
   ```npm:command
-     npm server
+     npm run server
   ```
   
 REST-API起動後、下記URLにブラウザでアクセスすると、

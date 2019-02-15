@@ -38,6 +38,10 @@ const todoData = [
     detail : "abcdefghijklmn"
   },
   {
+    done :false, subject : "test11",
+    detail : "完全、部分一致確認用"
+  },
+  {
     done :false, subject : "test3",
     detail : "1234567890"
   },
@@ -56,6 +60,14 @@ const todoData = [
   {
     done :true, subject : "beforesubject",
     detail : "beforedetail"
+  },
+  {
+    done :false, subject : "te*st",
+    detail : "*を含む"
+  },
+  {
+    done :false, subject : "te/st",
+    detail : "/を含む"
   }
 ]
 
@@ -63,16 +75,6 @@ describe(`Webサーバ基本機能`, () => {
   it('存在しないページ', (done) => {
     supertest.get('/test')
       .expect(404)
-      .end((error, response) => {
-        if(error) {
-          return done(error);
-        }
-        done();
-      });
-  });
-  it('サーバエラー', (done) => {
-    supertest.get('/test/broken')
-      .expect(500)
       .end((error, response) => {
         if(error) {
           return done(error);
@@ -115,9 +117,19 @@ describe(`サポートAPIのチェック`, () => {
         done();
       });
   });
-  it('API仕様書へ転送', (done) => {
+  it('API仕様書を表示', (done) => {
     supertest.get('/api/spec')
-      .expect(302)
+      .expect(200)
+      .end((error, response) => {
+        if(error) {
+          return done(error);
+        }
+        done();
+      });
+  });
+  it('テスト結果を表示', (done) => {
+    supertest.get('/coverage')
+      .expect(301)
       .end((error, response) => {
         if(error) {
           return done(error);
@@ -204,8 +216,8 @@ describe(`正常シーケンス(複数削除とタイトル一覧の条件は、
     }
   });
 
-  it('複数取得(subject=te)', async () => {
-    const response = await supertest.get('/todo?subject=te')
+  it('複数取得(subject=test1)', async () => {
+    const response = await supertest.get('/todo?subject=test1')
     .timeout({ response: 100000, deadline: 100000 })
     .expect(200)
     .catch(err => { 
@@ -217,10 +229,22 @@ describe(`正常シーケンス(複数削除とタイトル一覧の条件は、
     check["data"] = {};
     expect(response.body).toMatchObject({result:0});
     expect(response.body).toHaveProperty("data");
-    expect(response.body.data.length).toBeGreaterThanOrEqual(1); // 1以上
+    expect(response.body.data.length).toBe(2); // 2
     for(let item of response.body.data){
-      expect(item).toMatchObject({subject:expect.stringMatching(/te/)});
+      expect(item).toMatchObject({subject:expect.stringMatching(/test1/)});
     }
+  });
+
+  it('1件取得(subject=test1)', async () => {
+    const response = await supertest.get('/todo?subject=test1&exact=true')
+    .timeout({ response: 100000, deadline: 100000 })
+    .expect(200)
+    .catch(err => { 
+      console.error(err);
+      throw err; 
+    });
+    expect(response.body.data.length).toBe(1); // 1
+    expect(response.body.data[0].subject).toEqual('test1');
   });
 
   it('複数取得(detail=123)', async () => {
@@ -259,9 +283,10 @@ describe(`正常シーケンス(複数削除とタイトル一覧の条件は、
       expect(item).toMatchObject({done:false,subject:expect.stringMatching(/xt/)});
     }
   });
+
   it('1件更新', async () => {
     let afterItem = {done:false, subject:"aftersubject", detail:"詳細書き換え後"};
-    const response = await supertest.put('/todo/beforesubject')
+    const response = await supertest.put('/todo?subject=beforesubject')
     .type('form')
     .set('Accept', /application\/json/)
     .timeout({ response: 100000, deadline: 100000 })
@@ -273,21 +298,18 @@ describe(`正常シーケンス(複数削除とタイトル一覧の条件は、
     });
     
     expect(response.body).toEqual(checkResponse);
-  });
 
-  it('1件取得', async () => {
-    let afterItem = {done:false, subject:"aftersubject", detail:"詳細書き換え後"};
-    const response = await supertest.get('/todo/aftersubject')
+    const result = await supertest.get('/todo?subject=aftersubject&exact=true')
     .timeout({ response: 100000, deadline: 100000 })
     .expect(200)
     .catch(err => { 
       console.error(err);
       throw err; 
     });
-
     let check = JSON.parse(JSON.stringify(checkResponse));
-    check["data"] = afterItem;
-    expect(response.body).toEqual(check);
+    check["data"] = [afterItem];
+    expect(result.body).toEqual(check);
+
   });
 
   it('登録(上書き)', async () => {
@@ -305,37 +327,14 @@ describe(`正常シーケンス(複数削除とタイトル一覧の条件は、
     expect(response.body).toEqual(checkResponse);
 
     // 更新確認
-    const result = await supertest.get('/todo/test1')
+    const result = await supertest.get('/todo?subject=test1&exact=true')
     .expect(200)
     .catch(err => { 
       console.error(err);
       throw err; 
     });
     let check = JSON.parse(JSON.stringify(checkResponse));
-    check["data"] = afterItem;
-    expect(result.body).toEqual(check);
-  });
-
-  it('1件削除', async () => {
-    const response = await supertest.del('/todo/aftersubject')
-    .timeout({ response: 100000, deadline: 100000 })
-    .expect(200)
-    .catch(err => { 
-      console.error(err);
-      throw err; 
-    });
-    expect(response.body).toEqual(checkResponse);
-
-    // 取得して消えていることを確認
-    const result = await supertest.get('/todo/aftersubject')
-    .timeout({ response: 100000, deadline: 100000 })
-    .expect(200)
-    .catch(err => { 
-      console.error(err);
-      throw err; 
-    });
-    let check = JSON.parse(JSON.stringify(checkResponse));
-    check["data"] = {};
+    check["data"] = [afterItem];
     expect(result.body).toEqual(check);
   });
 
@@ -378,7 +377,7 @@ describe(`POST 登録のエラー、準正常系テスト`, () => {
     expect(response.body).toEqual(checkResponse);
 
     // 更新されているか確認
-    const result = await supertest.get('/todo/123')
+    const result = await supertest.get('/todo?subject=123&exact=true')
     .timeout({ response: 100000, deadline: 100000 })
     .expect(200)
     .catch(err => { 
@@ -386,7 +385,7 @@ describe(`POST 登録のエラー、準正常系テスト`, () => {
       throw err; 
     });
     let check = JSON.parse(JSON.stringify(checkResponse));
-    check["data"] = {done:false,subject:"123",detail:""};
+    check["data"] = [{done:false,subject:"123",detail:""}];
     expect(result.body).toEqual(check);
 
   });
@@ -419,7 +418,7 @@ describe(`POST 登録のエラー、準正常系テスト`, () => {
     expect(response.body).toEqual(checkResponse);
 
     // 更新されているか確認
-    const result = await supertest.get('/todo/123')
+    const result = await supertest.get('/todo?subject=123&exact=true')
     .timeout({ response: 100000, deadline: 100000 })
     .expect(200)
     .catch(err => { 
@@ -427,7 +426,7 @@ describe(`POST 登録のエラー、準正常系テスト`, () => {
       throw err; 
     });
     let check = JSON.parse(JSON.stringify(checkResponse));
-    check["data"] = {done:true,subject:"123",detail:""};
+    check["data"] = [{done:true,subject:"123",detail:""}];
     expect(result.body).toEqual(check);
   
   });
@@ -488,20 +487,6 @@ describe(`POST 登録のエラー、準正常系テスト`, () => {
     expect(response.body.result).toEqual(EL.E_PRM_PROHIBITED.num);
   });
 
-  it('subjectがsubjects', async () => {
-    const response = await supertest.post('/todo')
-    .type('form')
-    .set('Accept', /application\/json/)
-    .timeout({ response: 100000, deadline: 100000 })
-    .send({done:"false",subject:"subjects",detail:""})
-    .expect(200)
-    .catch(err => { 
-      console.error(err);
-      throw err; 
-    });
-    expect(response.body.result).toEqual(EL.E_PRM_PROHIBITED.num);
-  });
-
   it('subject50文字', async () => {
     let testdata = "";
     for(let i=0; i<50; i++){
@@ -520,14 +505,14 @@ describe(`POST 登録のエラー、準正常系テスト`, () => {
     expect(response.body).toEqual(checkResponse);
 
     // 更新されているか確認
-    const result = await supertest.get(`/todo/${testdata}`)
+    const result = await supertest.get(`/todo?subject=${testdata}&exact=true`)
     .expect(200)
     .catch(err => { 
       console.error(err);
       throw err; 
     });
     let check = JSON.parse(JSON.stringify(checkResponse));
-    check["data"] = {done:false,subject:testdata,detail:""};
+    check["data"] = [{done:false,subject:testdata,detail:""}];
     expect(result.body).toEqual(check);
   });
 
@@ -567,14 +552,14 @@ describe(`POST 登録のエラー、準正常系テスト`, () => {
     expect(response.body).toEqual(checkResponse);
 
     // 更新されているか確認
-    const result = await supertest.get('/todo/extr5')
+    const result = await supertest.get('/todo?subject=extr5&exact=true')
     .expect(200)
     .catch(err => { 
       console.error(err);
       throw err; 
     });
     let check = JSON.parse(JSON.stringify(checkResponse));
-    check["data"] = {done:false,subject:"extr5",detail:testdata};
+    check["data"] = [{done:false,subject:"extr5",detail:testdata}];
     expect(result.body).toEqual(check);
   });
 
@@ -642,7 +627,7 @@ describe(`PUT 更新のエラー、準正常系テスト`, () => {
   });
 
   it('存在しているsubjectに変更しようとした', async () => {
-    const response = await supertest.put('/todo/test1')
+    const response = await supertest.put('/todo?subject=test1')
     .type('form')
     .set('Accept', /application\/json/)
     .timeout({ response: 100000, deadline: 100000 })
@@ -656,7 +641,7 @@ describe(`PUT 更新のエラー、準正常系テスト`, () => {
   });
 
   it('doneなし、subject数値', async () => {
-    const response = await supertest.put('/todo/test1')
+    const response = await supertest.put('/todo?subject=test1')
     .type('form')
     .set('Accept', /application\/json/)
     .timeout({ response: 100000, deadline: 100000 })
@@ -669,7 +654,7 @@ describe(`PUT 更新のエラー、準正常系テスト`, () => {
     expect(response.body).toEqual(checkResponse);
 
     // 更新されているか確認
-    const result = await supertest.get('/todo/123')
+    const result = await supertest.get('/todo?subject=123&exact=true')
     .timeout({ response: 100000, deadline: 100000 })
     .expect(200)
     .catch(err => { 
@@ -677,12 +662,12 @@ describe(`PUT 更新のエラー、準正常系テスト`, () => {
       throw err; 
     });
     let check = JSON.parse(JSON.stringify(checkResponse));
-    check["data"] = {done:true,subject:"123",detail:""};
+    check["data"] = [{done:true,subject:"123",detail:""}];
     expect(result.body).toEqual(check);
   });
 
   it('存在しないsubjectを更新しようとする', async () => {
-    const response = await supertest.put('/todo/cccc')
+    const response = await supertest.put('/todo?subject=cccc')
     .type('form')
     .set('Accept', /application\/json/)
     .timeout({ response: 100000, deadline: 100000 })
@@ -696,7 +681,7 @@ describe(`PUT 更新のエラー、準正常系テスト`, () => {
   });
   
   it('done文字列＋不正文字', async () => {
-    const response = await supertest.put('/todo/test2')
+    const response = await supertest.put('/todo?subject=test2')
     .type('form')
     .set('Accept', /application\/json/)
     .timeout({ response: 100000, deadline: 100000 })
@@ -710,7 +695,7 @@ describe(`PUT 更新のエラー、準正常系テスト`, () => {
   });
 
   it('done文字列＋Boolean句', async () => {
-    const response = await supertest.put('/todo/test2')
+    const response = await supertest.put('/todo?subject=test2')
     .type('form')
     .set('Accept', /application\/json/)
     .timeout({ response: 100000, deadline: 100000 })
@@ -723,7 +708,7 @@ describe(`PUT 更新のエラー、準正常系テスト`, () => {
     expect(response.body).toEqual(checkResponse);
 
     // 更新されているか確認
-    const result = await supertest.get('/todo/567')
+    const result = await supertest.get('/todo?subject=567&exact=true')
     .timeout({ response: 100000, deadline: 100000 })
     .expect(200)
     .catch(err => { 
@@ -731,11 +716,11 @@ describe(`PUT 更新のエラー、準正常系テスト`, () => {
       throw err; 
     });
     let check = JSON.parse(JSON.stringify(checkResponse));
-    check["data"] = {done:true,subject:"567",detail:""};
+    check["data"] = [{done:true,subject:"567",detail:""}];
     expect(result.body).toEqual(check);
   });
   it('subjectなし', async () => {
-    const response = await supertest.put('/todo/test3')
+    const response = await supertest.put('/todo?subject=test3')
     .type('form')
     .set('Accept', /application\/json/)
     .timeout({ response: 100000, deadline: 100000 })
@@ -748,20 +733,20 @@ describe(`PUT 更新のエラー、準正常系テスト`, () => {
     expect(response.body).toEqual(checkResponse);
 
     // 更新されているか確認
-    const result = await supertest.get('/todo/test3')
+    const result = await supertest.get('/todo?subject=test3')
     .expect(200)
     .catch(err => { 
       console.error(err);
       throw err; 
     });
     let check = JSON.parse(JSON.stringify(checkResponse));
-    check["data"] = {done:true,subject:"test3",detail:"部分更新できる"};
+    check["data"] = [{done:true,subject:"test3",detail:"部分更新できる"}];
     expect(result.body).toEqual(check);
 
   });
 
   it('detailなし', async () => {
-    const response = await supertest.put('/todo/extr1')
+    const response = await supertest.put('/todo?subject=extr1')
     .type('form')
     .set('Accept', /application\/json/)
     .timeout({ response: 100000, deadline: 100000 })
@@ -775,7 +760,7 @@ describe(`PUT 更新のエラー、準正常系テスト`, () => {
     expect(response.body).toEqual(checkResponse);
 
     // 更新されているか確認
-    const result = await supertest.get('/todo/extr10')
+    const result = await supertest.get('/todo?subject=extr10&exact=true')
     .timeout({ response: 100000, deadline: 100000 })
     .expect(200)
     .catch(err => { 
@@ -783,12 +768,12 @@ describe(`PUT 更新のエラー、準正常系テスト`, () => {
       throw err; 
     });
     let check = JSON.parse(JSON.stringify(checkResponse));
-    check["data"] = {done:true,subject:"extr10",detail:"今日は晴れのち曇り"};
+    check["data"] = [{done:true,subject:"extr10",detail:"今日は晴れのち曇り"}];
     expect(result.body).toEqual(check);
   });
 
   it('引数なし', async () => {
-    const response = await supertest.put('/todo/extr2')
+    const response = await supertest.put('/todo?subject=extr2')
     .type('form')
     .set('Accept', /application\/json/)
     .timeout({ response: 100000, deadline: 100000 })
@@ -802,25 +787,11 @@ describe(`PUT 更新のエラー、準正常系テスト`, () => {
   });
 
   it('subject空白', async () => {
-    const response = await supertest.put('/todo/extr2')
+    const response = await supertest.put('/todo?subject=extr2')
     .type('form')
     .set('Accept', /application\/json/)
     .timeout({ response: 100000, deadline: 100000 })
     .send({done:"false",subject:"",detail:""})
-    .expect(200)
-    .catch(err => { 
-      console.error(err);
-      throw err; 
-    });
-    expect(response.body.result).toEqual(EL.E_PRM_PROHIBITED.num);
-  });
-
-  it('subjectがsubjects', async () => {
-    const response = await supertest.put('/todo/extr2')
-    .type('form')
-    .set('Accept', /application\/json/)
-    .timeout({ response: 100000, deadline: 100000 })
-    .send({done:"false",subject:"subjects",detail:""})
     .expect(200)
     .catch(err => { 
       console.error(err);
@@ -834,7 +805,7 @@ describe(`PUT 更新のエラー、準正常系テスト`, () => {
     for(let i=0; i<50; i++){
         testdata += i % 10;
     }
-    const response = await supertest.put('/todo/extr2')
+    const response = await supertest.put('/todo?subject=extr2')
     .type('form')
     .set('Accept', /application\/json/)
     .timeout({ response: 100000, deadline: 100000 })
@@ -847,14 +818,14 @@ describe(`PUT 更新のエラー、準正常系テスト`, () => {
     expect(response.body).toEqual(checkResponse);
 
     // 更新されているか確認
-    const result = await supertest.get(`/todo/${testdata}`)
+    const result = await supertest.get(`/todo?subject=${testdata}&exact=true`)
     .expect(200)
     .catch(err => { 
       console.error(err);
       throw err; 
     });
     let check = JSON.parse(JSON.stringify(checkResponse));
-    check["data"] = {done:false,subject:testdata,detail:""};
+    check["data"] = [{done:false,subject:testdata,detail:""}];
     expect(result.body).toEqual(check);
   });
 
@@ -863,7 +834,7 @@ describe(`PUT 更新のエラー、準正常系テスト`, () => {
     for(let i=0; i<51; i++){
         testdata += i % 10;
     }
-    const response = await supertest.put('/todo/extr2')
+    const response = await supertest.put('/todo?subject=extr2')
     .type('form')
     .set('Accept', /application\/json/)
     .timeout({ response: 100000, deadline: 100000 })
@@ -881,7 +852,7 @@ describe(`PUT 更新のエラー、準正常系テスト`, () => {
     for(let i=0; i<255; i++){
         testdata += i % 10;
     }
-    const response = await supertest.put('/todo/extr10')
+    const response = await supertest.put('/todo?subject=extr10')
     .type('form')
     .set('Accept', /application\/json/)
     .timeout({ response: 100000, deadline: 100000 })
@@ -894,7 +865,7 @@ describe(`PUT 更新のエラー、準正常系テスト`, () => {
     expect(response.body).toEqual(checkResponse);
 
     // 更新されているか確認
-    const result = await supertest.get('/todo/extr10')
+    const result = await supertest.get('/todo?subject=extr10')
     .timeout({ response: 100000, deadline: 100000 })
     .expect(200)
     .catch(err => { 
@@ -902,7 +873,7 @@ describe(`PUT 更新のエラー、準正常系テスト`, () => {
       throw err; 
     });
     let check = JSON.parse(JSON.stringify(checkResponse));
-    check["data"] = {done:false,subject:"extr10",detail:testdata};
+    check["data"] = [{done:false,subject:"extr10",detail:testdata}];
     expect(result.body).toEqual(check);
 
   });
@@ -912,7 +883,7 @@ describe(`PUT 更新のエラー、準正常系テスト`, () => {
     for(let i=0; i<256; i++){
         testdata += i % 10;
     }
-    const response = await supertest.put('/todo/extr10')
+    const response = await supertest.put('/todo?subject=extr10')
     .type('form')
     .set('Accept', /application\/json/)
     .timeout({ response: 100000, deadline: 100000 })

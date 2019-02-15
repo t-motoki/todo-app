@@ -3,8 +3,8 @@
   "version": "0.0.2",
   "private": true,
   "scripts": {
-    "create": "npx aglio -i md/api_spec.md -o public/api_spec.html",
-    "test": "nyc --reporter=text --reporter=html mocha --watch",
+    "create": "npx aglio -i md/api_spec.md -o docs/api_spec.html",
+    "test": "nyc --reporter=text --reporter=html --report-dir=public/coverage mocha --watch",
     "server": "nodemon ./bin/www",
     "react": "webpack",
     "start": "concurrently \"npm run react\" \"npm run server\""

@@ -345,26 +345,4 @@ router.delete('/', (req, res) => {
   });
 });
 
-// todo1件削除
-router.delete('/:subject', (req, res) => {
-
-  // クエリの生成
-  const query = {subject:req.params.subject};
-  systemLogger.debug(`query:${JSON.stringify(query)}`);
-
-  // 1検削除
-  let result = JSON.parse(JSON.stringify(result_template));
-  item.remove(query, err => {
-    res.header('Content-Type', contentType);
-    if (err){
-      result["result"] = EL.E_RUN_DATABASE.num;
-      result["message"] = "データベース実行時にエラーが発生しました。詳細 => ";
-      result["message"] += JSON.stringify(err);
-      systemLogger.error(`result:${result["result"]}, message:${result["message"].replace(/\r?\n/g,'')}`);
-    }
-    // 結果を返却
-    res.send(result);
-  });
-});
-
 module.exports = router;

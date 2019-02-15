@@ -5,10 +5,10 @@ const router = express.Router();
 const apilist = require('./apilist');
 const errorlist = require('./errorlist');
 
-// TOPページ
-router.get('/', (req, res) => {
-  res.sendFile('./public/index.html', { root: __dirname });
-});
+// TOPページ(public/index.htmがある為、ここは呼ばれない)
+// router.get('/', (req, res) => {
+//   res.sendFile('index.html', { root: __dirname + "/public/" });
+// });
 
 // API一覧を取得
 router.get('/api', (req, res) => {

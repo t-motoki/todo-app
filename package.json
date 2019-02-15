@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "create": "npx aglio -i md/api_spec.md -o docs/api_spec.html",
-    "test": "nyc --reporter=text --reporter=html --report-dir=public/coverage mocha --watch",
+    "test": "nyc --reporter=text --reporter=html --report-dir=public/coverage mocha --watch || true",
     "server": "nodemon ./bin/www",
     "react": "webpack",
     "start": "concurrently \"npm run react\" \"npm run server\""

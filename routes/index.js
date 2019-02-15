@@ -19,7 +19,7 @@ router.get('/api', (req, res) => {
 
 // API仕様書に転送
 router.get('/api/spec', (req, res) => {
-  res.redirect('../../api_spec.html');
+  res.sendFile('api_spec.html', { root: __dirname + "/../public/" });
 });
 
 // エラー一覧を取得

@@ -222,7 +222,7 @@ router.post('/', (req, res, next) => {
           result["message"] = "データベース実行時にエラーが発生しました。詳細 => ";
         }
         result["message"] += JSON.stringify(err);
-        systemLogger.error(`result: , message:${result["message"].replace(/\r?\n/g,'')}`);
+        systemLogger.error(`result:${result["result"]} , message:${result["message"].replace(/\r?\n/g,'')}`);
       } 
       res.send(result);
     });
@@ -331,7 +331,7 @@ router.put('/:subject', (req, res, next) => {
         if(docs.n === 0){
           result["result"] = EL.E_SRH_NOTTERGET.num;
           result["message"] = `更新対象subject:"${req.params.subject}"はデータベースに存在しません`;
-          systemLogger.error(`result: , message:${result["message"].replace(/\r?\n/g,'')}`);
+          systemLogger.error(`result:${result["result"]} , message:${result["message"].replace(/\r?\n/g,'')}`);
         }
       }
       res.send(result);

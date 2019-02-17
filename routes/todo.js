@@ -78,15 +78,50 @@ const createConditionalQuery = reqQuery => {
 
 };
 
+// ページオプションの追加
+const createPagenationOptions = (reqQuery,originalOptions) => {
+
+  // 1ページに表示する数を取得(デフォルト1000)
+  let pagers = parseInt((process.env.PAGERS || '1000'),10);
+  if(isNaN(pagers)){
+    pagers = 1000;
+  }
+  
+  let options = {};
+
+  // ページオプション以外のオプション設定をマージ
+  if(typeof originalOptions === "object"){
+    if(Object.keys(originalOptions).length>0){
+      options = JSON.parse(JSON.stringify(originalOptions));
+    }
+  }
+
+  // ページ設定
+  if("page" in reqQuery){
+    if(Math.sign(reqQuery["page"])>=1){
+      let page = reqQuery["page"];
+      options["skip"] = pagers * (page - 1);
+      options["limit"] = pagers;
+    }
+  }
+  systemLogger.debug(`options:${JSON.stringify(options)}`);
+
+  return options;
+
+};
+
 // todo一覧取得
 router.get('/', (req, res) => {
 
   // クエリ作成
   const query = createConditionalQuery(req.query);
 
+  // オプション作成
+  const options = createPagenationOptions(req.query, {sort:{ subject: 1 }});
+
   // todo一覧を取得(IDとバージョンは取得しない)
   let result = JSON.parse(JSON.stringify(result_template));
-  item.find(query, {_id:0, __v:0}, {sort:{ subject: 1 }}, (err, docs) => {
+  item.find(query, {_id:0, __v:0}, options, (err, docs) => {
     res.header('Content-Type', contentType);
     if (err){
       result["result"] = EL.E_RUN_DATABASE.num;
@@ -109,8 +144,13 @@ router.get('/subjects', (req, res) =>  {
   // クエリ作成
   const query = createConditionalQuery(req.query);
 
+  // オプション作成
+  const options = createPagenationOptions(req.query, {sort:{ subject: 1 }});
+
+  // クエリ実行
   let result = JSON.parse(JSON.stringify(result_template));
-  item.find(query).distinct("subject", (err, docs) => {
+  // item.find(query).distinct("subject", (err, docs) => {
+  item.find(query, {_id:0, __v:0}, options, (err, docs) => {
     res.header('Content-Type', contentType);
     if (err){
       result["result"] = EL.E_RUN_DATABASE.num;
@@ -118,21 +158,13 @@ router.get('/subjects', (req, res) =>  {
       result["message"] += JSON.stringify(err);
       systemLogger.error(`result:${result["result"]}, message:${result["message"].replace(/\r?\n/g,'')}`);
     }else{
-
       // 正しく取得できた場合に格納
-      result["data"] = JSON.parse(JSON.stringify(docs.sort(
-      // distinctがsortに対応してないため、ここで昇順ソート
-      (a,b)=>{
-          let comp = 0;
-          if(a > b){
-            comp = 1;
-          }else if(a < b){
-            comp = -1;
-          }
-          return comp;
-        })
-      ));
+      result["data"] = [];
+      for(let item of docs){
+        result["data"].push(item.subject);
+      }
     }
+
     // 結果を返却
     res.send(result);
   });

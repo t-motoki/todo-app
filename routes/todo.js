@@ -86,7 +86,15 @@ const createPagenationOptions = (reqQuery,originalOptions) => {
   // ページ設定
   if("page" in reqQuery){
     if(Math.sign(reqQuery["page"])>=1){
-      let page = reqQuery["page"];
+      let page = Number(reqQuery["page"]);
+
+      // 1ページ内で取得できる数の制御
+      if("limit" in reqQuery){
+        if(Math.sign(reqQuery["limit"])>=1){
+          pagers = Number(reqQuery["limit"]);
+        }
+      }
+
       options["skip"] = pagers * (page - 1);
       options["limit"] = pagers;
     }

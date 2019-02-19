@@ -4,7 +4,7 @@ FORMAT: 1A
 
 ## Group Todo List API
 
-### TODO一覧取得 [/todo{?done,subject,detail,page}]
+### TODO一覧取得 [/todo{?done,subject,detail,page,limit}]
 
 #### TODO一覧取得 [GET]
 
@@ -14,21 +14,26 @@ FORMAT: 1A
 * subjectのみ指定された場合、その文字列が含む一覧を返却
 * detailのみ指定された場合、その文字列が含む一覧を返却
 * 複数条件が指定された場合、AND検索して条件に一致した一覧を返却
-* pageが１以上指定された場合、ページに対応した件数取得できる。
+* pageが１以上指定された場合、ページに対応した件数取得できる
 * pageに0、負数、文字列が指定されると無視される
 * 1ページの取得件数はデフォルト1000件
 * (システム起動時に環境変数PAGERSに数値が指定されると、その数値がデフォルトになる)
+* pageが指定されている状態limitを1以上指定すると、1ページの取得数を指定できる
 
 + Parameters
     + done: false (boolean) - 完了フラグ(false:未完、true:完了)
     + subject: 宿題 (string) - タイトルの検索条件
     + detail: 算数ドリル (string) - 内容の検索条件
-    + page: 1 (number) - 1回に取得する範囲を指定。
+    + page: 1 (number) - 1回に取得する範囲を指定
+    + limit: 100 (number) - 1ページで取得できる件数の指定
 
 + Response 200 (application/json)
     + Attributes
         + result: 600 (number, required) - 実行結果(0:正常、1以上:エラー)
         + message: 未実装です (string, required) - エラーメッセージなど
+        + pageinfo (object)
+            + pages: 10 (number) - ページ総数
+            + total: 10000 (number) - TODOの総件数
         + data (array[object], fixed-type)
             + (object)
                 + done: false (boolean, required) - 完了かどうか(false:未完、true:完了)
@@ -36,7 +41,7 @@ FORMAT: 1A
                 + detail: 算数ドリル (string, required) - 内容
 
 
-### TODOタイトル一覧取得 [/todo/subjects{?done,subject,detail,page}]
+### TODOタイトル一覧取得 [/todo/subjects{?done,subject,detail,page,limit}]
 
 #### TODOタイトル一覧取得 [GET]
 
@@ -47,7 +52,9 @@ FORMAT: 1A
     + done: false (boolean) - 完了フラグ(false:未完、true:完了)
     + subject: 宿題 (string) - タイトルの検索条件
     + detail: 算数ドリル (string) - 内容の検索条件
-    + page: 1 (number) - 1回に取得する範囲を指定。
+    + page: 1 (number) - 1回に取得する範囲を指定
+    + limit: 100 (number) - 1ページで取得できる件数の指定
+
 
 + Response 200 (application/json)
     + Attributes
@@ -70,6 +77,9 @@ FORMAT: 1A
     + Attributes
         + result: 600 (number, required) - 実行結果(0:正常、1以上:エラー)
         + message: 未実装です (string, required) - エラーメッセージなど
+        + pageinfo (object)
+            + pages: 10 (number) - ページ総数
+            + total: 10000 (number) - タイトルの総件数
         + data (object)
             + done: false (boolean, required) - 完了かどうか(false:未完、true:完了)
             + subject: 宿題 (string, required) - タイトル

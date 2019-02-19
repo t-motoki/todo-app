@@ -105,6 +105,25 @@ const createPagenationOptions = (reqQuery,originalOptions) => {
 
 };
 
+// ページ総数およびTODO総数を取得
+const getPageInfo = async (query, limit) => {
+
+  let total = 0;
+  let pages = 0;
+  try {
+    total = await item.countDocuments(query).exec();
+  } catch(err) {
+    systemLogger.error(`getPageinfo:${JSON.stringify(err)}`);
+  }
+
+  if(total>0){
+    pages = Math.ceil(total/limit);
+  }
+
+  return {total:total,pages:pages};
+
+}; 
+
 // todo一覧取得
 router.get('/', (req, res) => {
 
@@ -116,7 +135,7 @@ router.get('/', (req, res) => {
 
   // todo一覧を取得(IDとバージョンは取得しない)
   let result = JSON.parse(JSON.stringify(result_template));
-  item.find(query, {_id:0, __v:0}, options, (err, docs) => {
+  item.find(query, {_id:0, __v:0}, options, async (err, docs) => {
     res.header('Content-Type', contentType);
     if (err){
       result["result"] = EL.E_RUN_DATABASE.num;
@@ -126,6 +145,9 @@ router.get('/', (req, res) => {
     }else{
       // 正しく取得できた場合に格納
       result["data"] = JSON.parse(JSON.stringify(docs));
+      if("skip" in options){
+        result["pageinfo"] = await getPageInfo(query, options["limit"]);
+      }    
     }
     
     // 結果を返却
@@ -145,7 +167,7 @@ router.get('/subjects', (req, res) =>  {
   // クエリ実行
   let result = JSON.parse(JSON.stringify(result_template));
   // item.find(query).distinct("subject", (err, docs) => {
-  item.find(query, {_id:0, __v:0}, options, (err, docs) => {
+  item.find(query, {_id:0, __v:0}, options, async (err, docs) => {
     res.header('Content-Type', contentType);
     if (err){
       result["result"] = EL.E_RUN_DATABASE.num;
@@ -158,6 +180,9 @@ router.get('/subjects', (req, res) =>  {
       for(let item of docs){
         result["data"].push(item.subject);
       }
+      if("skip" in options){
+        result["pageinfo"] = await getPageInfo(query, options["limit"]);
+      }    
     }
 
     // 結果を返却

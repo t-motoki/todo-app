@@ -4,7 +4,7 @@ FORMAT: 1A
 
 ## Group Todo List API
 
-### TODO一覧取得 [/todo{?done,subject,detail,exact,page}]
+### TODO一覧取得 [/todo{?done,subject,detail,page}]
 
 #### TODO一覧取得 [GET]
 
@@ -12,7 +12,6 @@ FORMAT: 1A
 * パラメータの指定がない場合、すべての一覧を返却
 * doneのみ指定された場合、条件に一致する一覧を返却
 * subjectのみ指定された場合、その文字列が含む一覧を返却
-* exactにtrueが指定されるとsubujectのみ、完全一致検索となる
 * detailのみ指定された場合、その文字列が含む一覧を返却
 * 複数条件が指定された場合、AND検索して条件に一致した一覧を返却
 * pageが１以上指定された場合、ページに対応した件数取得できる。
@@ -24,7 +23,6 @@ FORMAT: 1A
     + done: false (boolean) - 完了フラグ(false:未完、true:完了)
     + subject: 宿題 (string) - タイトルの検索条件
     + detail: 算数ドリル (string) - 内容の検索条件
-    + exact: false (boolean) - タイトルの完全一致検索設定(false:未完[default]、true:完了)
     + page: 1 (number) - 1回に取得する範囲を指定。
 
 + Response 200 (application/json)
@@ -38,7 +36,7 @@ FORMAT: 1A
                 + detail: 算数ドリル (string, required) - 内容
 
 
-### TODOタイトル一覧取得 [/todo/subjects{?done,subject,detail,exact,page}]
+### TODOタイトル一覧取得 [/todo/subjects{?done,subject,detail,page}]
 
 #### TODOタイトル一覧取得 [GET]
 
@@ -49,7 +47,6 @@ FORMAT: 1A
     + done: false (boolean) - 完了フラグ(false:未完、true:完了)
     + subject: 宿題 (string) - タイトルの検索条件
     + detail: 算数ドリル (string) - 内容の検索条件
-    + exact: false (boolean) - タイトルの完全一致検索設定(false:未完[default]、true:完了)
     + page: 1 (number) - 1回に取得する範囲を指定。
 
 + Response 200 (application/json)
@@ -59,6 +56,24 @@ FORMAT: 1A
         + data (array) - タイトル一覧
             + 宿題 (string)
             + 自習 (string)
+
+### TODO1件取得 [/todo/item{?subject}]
+
+#### TODO1件取得 [GET]
+
+* 指定したタイトルに一致するTODOを返却
+* subjectが指定されていない場合、エラーを返す(100)
+
++ Parameters 
+    + subject: 宿題 (string, required) - タイトル
++ Response 200 (application/json)
+    + Attributes
+        + result: 600 (number, required) - 実行結果(0:正常、1以上:エラー)
+        + message: 未実装です (string, required) - エラーメッセージなど
+        + data (object)
+            + done: false (boolean, required) - 完了かどうか(false:未完、true:完了)
+            + subject: 宿題 (string, required) - タイトル
+            + detail: 算数ドリル (string, required) - 内容
 
 
 ### TODO追加 [/todo]
@@ -118,9 +133,9 @@ FORMAT: 1A
         + result: 600 (number, required) - 実行結果(0:正常、1以上:エラー)
         + message: 未実装です (string, required) - エラーメッセージなど
 
-### TODO削除 [/todo{?done,subject,detail,exact}]
+### TODO複数削除 [/todo{?done,subject,detail}]
 
-#### TODO削除 [DELETE]
+#### TODO複数削除 [DELETE]
 
 * パラメータに指定がない場合は全件削除
 * 検索条件については「TODO一覧取得 [GET]」と同様の為、そちらを参照
@@ -130,12 +145,27 @@ FORMAT: 1A
     + done: false (boolean) - 完了かどうか(false:未完、true:完了)
     + subject: 宿題 (string) - タイトル
     + detail: 算数ドリル (string) - 内容
-    + exact: false (boolean) - タイトルの完全一致検索設定(false:未完[default]、true:完了)
 
 + Response 200 (application/json)
     + Attributes
         + result: 600 (number, required) - 実行結果(0:正常、1以上:エラー)
         + message: 未実装です (string, required) - エラーメッセージなど
+
+
+### TODO1件削除 [/todo/item{?subject}]
+
+#### TODO1件削除 [DELETE]
+
+* 指定したタイトルに一致するTODOを削除
+* subjectが指定されていない場合、エラーを返す(100)
+
++ Parameters 
+    + subject: 宿題 (string, required) - タイトル
++ Response 200 (application/json)
+    + Attributes
+        + result: 600 (number, required) - 実行結果(0:正常、1以上:エラー)
+        + message: 未実装です (string, required) - エラーメッセージなど
+
 
 ## Group Support API
 

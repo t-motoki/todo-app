@@ -36,27 +36,13 @@ const createConditionalQuery = reqQuery => {
 
   // タイトル
   if("subject" in reqQuery){
-    // 完全一致検索かどうか
-    let exact = false;
-    if("exact" in reqQuery){
-      if(reqQuery["exact"]==="true"){
-        exact = true;
-      }
-    }
-
-    if(exact){
-      // 完全一致
-      query["subject"] = reqQuery.subject;
-      querylog["subject"] = reqQuery.subject;
-    }else{
-      // 部分一致
-      const subject = RegExp.escape(reqQuery.subject);
-      query["subject"] = new RegExp(subject);
-      querylog["subject"] = `/${subject}/`;
-    }
+    // 部分一致
+    const subject = RegExp.escape(reqQuery.subject);
+    query["subject"] = new RegExp(subject);
+    querylog["subject"] = `/${subject}/`;
   }
 
-  // タイトル
+  // 内容
   if("detail" in reqQuery){
     // 部分一致
     const detail = RegExp.escape(reqQuery.detail);
@@ -64,6 +50,7 @@ const createConditionalQuery = reqQuery => {
     querylog["detail"] = `/${detail}/`;
   }
 
+  // 完了フラグ
   if("done" in reqQuery){
     if(reqQuery.done==="true" || reqQuery.done==="false"){
       // 正しい指定時のみ条件に入れる
@@ -170,6 +157,55 @@ router.get('/subjects', (req, res) =>  {
   });
 });
 
+// todoを取得(タイトル指定して1件取得)
+router.get('/item', (req, res, next) => {
+
+  if(!("subject" in req.query)){
+    // queryにタイトルの指定がない場合エラー
+    next();
+  }else{
+    // クエリの生成
+    const query = {subject:req.query.subject};
+    systemLogger.debug(`query:${JSON.stringify(query)}`);
+
+    // todoを取得(IDとバージョンは取得しない)
+    let result = JSON.parse(JSON.stringify(result_template));
+    item.findOne(query, { _id:0, __v:0 }, (err, docs) => {
+      res.header('Content-Type', contentType);
+      if (err){
+        result["result"] = EL.E_RUN_DATABASE.num;
+        result["message"] = "データベース実行時にエラーが発生しました。詳細 => ";
+        result["message"] += JSON.stringify(err);
+        systemLogger.error(`result:${result["result"]}, message:${result["message"].replace(/\r?\n/g,'')}`);
+      }else{
+        if(docs){
+          // 正しく取得できた場合に格納
+          result["data"] = JSON.parse(JSON.stringify(docs));
+        }else{
+          // ない場合は空のオブジェクトを返す
+          result["data"] = {};
+        }
+      }
+      
+      // 結果を返却
+      res.send(result);
+    });
+  }
+
+}, (req, res) => {
+
+  // 引数が足りていないためエラー
+  let result = {
+    result: EL.E_PRM_NOTENOUGH.num,
+    message: `subjectが指定されていません。`
+  };
+  systemLogger.error(`result:${result["result"]}, message:${result["message"].replace(/\r?\n/g,'')}`);
+
+  // エラーを返却
+  res.header('Content-Type', contentType);
+  res.send(result);
+
+});
 
 // todo追加
 router.post('/', (req, res, next) => {
@@ -376,5 +412,47 @@ router.delete('/', (req, res) => {
     res.send(result);
   });
 });
+
+// todo1件削除
+router.delete('/item', (req, res, next) => {
+
+  if(!("subject" in req.query)){
+    // queryにタイトルの指定がない場合エラー
+    next();
+  }else{
+    // クエリの生成
+    const query = {subject:req.query.subject};
+    systemLogger.debug(`query:${JSON.stringify(query)}`);
+
+    // 1検削除
+    let result = JSON.parse(JSON.stringify(result_template));
+    item.remove(query, err => {
+      res.header('Content-Type', contentType);
+      if (err){
+        result["result"] = EL.E_RUN_DATABASE.num;
+        result["message"] = "データベース実行時にエラーが発生しました。詳細 => ";
+        result["message"] += JSON.stringify(err);
+        systemLogger.error(`result:${result["result"]}, message:${result["message"].replace(/\r?\n/g,'')}`);
+      }
+      // 結果を返却
+      res.send(result);
+    });
+  }
+}, (req, res) => {
+
+  // 引数が足りていないためエラー
+  let result = {
+    result: EL.E_PRM_NOTENOUGH.num,
+    message: `subjectが指定されていません。`
+  };
+  systemLogger.error(`result:${result["result"]}, message:${result["message"].replace(/\r?\n/g,'')}`);
+
+  // エラーを返却
+  res.header('Content-Type', contentType);
+  res.send(result);
+
+});
+
+
 
 module.exports = router;

@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 const mongoose = require('mongoose');
 mongoose.set('useCreateIndex', true);  // index生成を有効化
@@ -9,7 +9,7 @@ const Schema = mongoose.Schema;
 const Item = new Schema({
   done: { type: Boolean, required: true },
   subject: { type: String, maxlength: 50, required: true, unique: true },
-  detail : { type: String, maxlength: 255 }
+  detail: { type: String, maxlength: 255 }
 });
 
 // DBと接続

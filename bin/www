@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-"use strict";
+'use strict';
 
 /**
  * Module dependencies.
@@ -23,7 +23,7 @@ cluster.schedulingPolicy = cluster.SCHED_RR;
  * Get port from environment and store in Express.
  */
 
-var port = normalizePort(process.env.PORT || '3000');
+const port = normalizePort(process.env.PORT || '3000');
 app.set('port', port);
 
 if (cluster.isMaster) {
@@ -35,17 +35,17 @@ if (cluster.isMaster) {
   }
 
   // 落ちた場合、別のサブプロセスを新しく起動
-  cluster.on('exit', function(worker) {
+  cluster.on('exit', function (worker) {
     systemLogger.info('Worker ' + worker.process.pid + ' died.');
     cluster.fork();
   });
 
   // サブプロセスの起動をログ出力
-  cluster.on('listening', function(worker) {
+  cluster.on('listening', function (worker) {
     systemLogger.info('Worker started with PID ' + worker.process.pid + '.');
   });
 
-}else{
+} else {
 
   // Webサーバ起動
   var server = http.createServer(app);
@@ -60,7 +60,7 @@ if (cluster.isMaster) {
 
 // ポートを正規化
 function normalizePort(val) {
-  var port = parseInt(val, 10);
+  const port = parseInt(val, 10);
 
   if (isNaN(port)) {
     // named pipe
@@ -87,16 +87,16 @@ function onError(error) {
 
   // エラー処理
   switch (error.code) {
-  case 'EACCES':
-    systemLogger.error(bind + ' requires elevated privileges');
-    process.exit(1);
-    break;
-  case 'EADDRINUSE':
-    systemLogger.error(bind + ' is already in use');
-    process.exit(1);
-    break;
-  default:
-    throw error;
+    case 'EACCES':
+      systemLogger.error(bind + ' requires elevated privileges');
+      process.exit(1);
+      break;
+    case 'EADDRINUSE':
+      systemLogger.error(bind + ' is already in use');
+      process.exit(1);
+      break;
+    default:
+      throw error;
   }
 }
 

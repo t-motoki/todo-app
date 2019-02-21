@@ -20,9 +20,9 @@
     </h1>
     <div class='clearfix'>
       <div class='fl pad1y space-right2'>
-        <span class="strong">88.89% </span>
+        <span class="strong">90.83% </span>
         <span class="quiet">Statements</span>
-        <span class='fraction'>208/234</span>
+        <span class='fraction'>208/229</span>
       </div>
       <div class='fl pad1y space-right2'>
         <span class="strong">85.42% </span>
@@ -35,9 +35,9 @@
         <span class='fraction'>23/23</span>
       </div>
       <div class='fl pad1y space-right2'>
-        <span class="strong">88.79% </span>
+        <span class="strong">90.75% </span>
         <span class="quiet">Lines</span>
-        <span class='fraction'>206/232</span>
+        <span class='fraction'>206/227</span>
       </div>
     </div>
     <p class="quiet">
@@ -532,12 +532,7 @@
 <a name='L484'></a><a href='#L484'>484</a>
 <a name='L485'></a><a href='#L485'>485</a>
 <a name='L486'></a><a href='#L486'>486</a>
-<a name='L487'></a><a href='#L487'>487</a>
-<a name='L488'></a><a href='#L488'>488</a>
-<a name='L489'></a><a href='#L489'>489</a>
-<a name='L490'></a><a href='#L490'>490</a>
-<a name='L491'></a><a href='#L491'>491</a>
-<a name='L492'></a><a href='#L492'>492</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L487'></a><a href='#L487'>487</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
@@ -680,7 +675,6 @@
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">12x</span>
@@ -709,7 +703,6 @@
 <span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -745,7 +738,6 @@
 <span class="cline-any cline-yes">12x</span>
 <span class="cline-any cline-yes">12x</span>
 <span class="cline-any cline-yes">12x</span>
-<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -978,7 +970,6 @@
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">7x</span>
@@ -1001,7 +992,6 @@
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -1169,8 +1159,7 @@ router.get('/', (req, res) =&gt; {
     res.header('Content-Type', contentType);
     <span class="missing-if-branch" title="if path not taken" >I</span>if (err) {
 <span class="cstat-no" title="statement not covered" >      result['result'] = EL.E_RUN_DATABASE.num;</span>
-<span class="cstat-no" title="statement not covered" >      result['message'] = 'データベース実行時にエラーが発生しました。詳細 =&gt; ';</span>
-<span class="cstat-no" title="statement not covered" >      result['message'] += JSON.stringify(err);</span>
+<span class="cstat-no" title="statement not covered" >      result['message'] = 'データベース実行時にエラーが発生しました。詳細 =&gt; ' + JSON.stringify(err);</span>
 <span class="cstat-no" title="statement not covered" >      systemLogger.error(`result:${result['result']}, message:${result['message'].replace(/\r?\n/g, '')}`);</span>
     } else {
       // 正しく取得できた場合に格納
@@ -1201,8 +1190,7 @@ router.get('/subjects', (req, res) =&gt; {
     res.header('Content-Type', contentType);
     <span class="missing-if-branch" title="if path not taken" >I</span>if (err) {
 <span class="cstat-no" title="statement not covered" >      result['result'] = EL.E_RUN_DATABASE.num;</span>
-<span class="cstat-no" title="statement not covered" >      result['message'] = 'データベース実行時にエラーが発生しました。詳細 =&gt; ';</span>
-<span class="cstat-no" title="statement not covered" >      result['message'] += JSON.stringify(err);</span>
+<span class="cstat-no" title="statement not covered" >      result['message'] = 'データベース実行時にエラーが発生しました。詳細 =&gt; ' + JSON.stringify(err);</span>
 <span class="cstat-no" title="statement not covered" >      systemLogger.error(`result:${result['result']}, message:${result['message'].replace(/\r?\n/g, '')}`);</span>
     } else {
       // 正しく取得できた場合に格納
@@ -1237,8 +1225,7 @@ router.get('/item', (req, res, next) =&gt; {
       res.header('Content-Type', contentType);
       <span class="missing-if-branch" title="if path not taken" >I</span>if (err) {
 <span class="cstat-no" title="statement not covered" >        result['result'] = EL.E_RUN_DATABASE.num;</span>
-<span class="cstat-no" title="statement not covered" >        result['message'] = 'データベース実行時にエラーが発生しました。詳細 =&gt; ';</span>
-<span class="cstat-no" title="statement not covered" >        result['message'] += JSON.stringify(err);</span>
+<span class="cstat-no" title="statement not covered" >        result['message'] = 'データベース実行時にエラーが発生しました。詳細 =&gt; ' + JSON.stringify(err);</span>
 <span class="cstat-no" title="statement not covered" >        systemLogger.error(`result:${result['result']}, message:${result['message'].replace(/\r?\n/g, '')}`);</span>
       } else {
         if (docs) {
@@ -1467,8 +1454,7 @@ router.delete('/', (req, res) =&gt; {
     res.header('Content-Type', contentType);
     <span class="missing-if-branch" title="if path not taken" >I</span>if (err) {
 <span class="cstat-no" title="statement not covered" >      result['result'] = EL.E_RUN_DATABASE.num;</span>
-<span class="cstat-no" title="statement not covered" >      result['message'] = 'データベース実行時にエラーが発生しました。詳細 =&gt; ';</span>
-<span class="cstat-no" title="statement not covered" >      result['message'] += JSON.stringify(err);</span>
+<span class="cstat-no" title="statement not covered" >      result['message'] = 'データベース実行時にエラーが発生しました。詳細 =&gt; ' + JSON.stringify(err);</span>
 <span class="cstat-no" title="statement not covered" >      systemLogger.error(`result:${result['result']}, message:${result['message'].replace(/\r?\n/g, '')}`);</span>
     }
     // 結果を返却
@@ -1493,8 +1479,7 @@ router.delete('/item', (req, res, next) =&gt; {
       res.header('Content-Type', contentType);
       <span class="missing-if-branch" title="if path not taken" >I</span>if (err) {
 <span class="cstat-no" title="statement not covered" >        result['result'] = EL.E_RUN_DATABASE.num;</span>
-<span class="cstat-no" title="statement not covered" >        result['message'] = 'データベース実行時にエラーが発生しました。詳細 =&gt; ';</span>
-<span class="cstat-no" title="statement not covered" >        result['message'] += JSON.stringify(err);</span>
+<span class="cstat-no" title="statement not covered" >        result['message'] = 'データベース実行時にエラーが発生しました。詳細 =&gt; ' + JSON.stringify(err);</span>
 <span class="cstat-no" title="statement not covered" >        systemLogger.error(`result:${result['result']}, message:${result['message'].replace(/\r?\n/g, '')}`);</span>
       }
       // 結果を返却
@@ -1525,7 +1510,7 @@ module.exports = router;
 </div><!-- /wrapper -->
 <div class='footer quiet pad2 space-top1 center small'>
   Code coverage
-  generated by <a href="https://istanbul.js.org/" target="_blank">istanbul</a> at Fri Feb 22 2019 01:21:21 GMT+0900 (JST)
+  generated by <a href="https://istanbul.js.org/" target="_blank">istanbul</a> at Fri Feb 22 2019 01:37:42 GMT+0900 (JST)
 </div>
 </div>
 <script src="../../prettify.js"></script>

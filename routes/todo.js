@@ -139,8 +139,7 @@ router.get('/', (req, res) => {
     res.header('Content-Type', contentType);
     if (err) {
       result['result'] = EL.E_RUN_DATABASE.num;
-      result['message'] = 'データベース実行時にエラーが発生しました。詳細 => ';
-      result['message'] += JSON.stringify(err);
+      result['message'] = 'データベース実行時にエラーが発生しました。詳細 => ' + JSON.stringify(err);
       systemLogger.error(`result:${result['result']}, message:${result['message'].replace(/\r?\n/g, '')}`);
     } else {
       // 正しく取得できた場合に格納
@@ -171,8 +170,7 @@ router.get('/subjects', (req, res) => {
     res.header('Content-Type', contentType);
     if (err) {
       result['result'] = EL.E_RUN_DATABASE.num;
-      result['message'] = 'データベース実行時にエラーが発生しました。詳細 => ';
-      result['message'] += JSON.stringify(err);
+      result['message'] = 'データベース実行時にエラーが発生しました。詳細 => ' + JSON.stringify(err);
       systemLogger.error(`result:${result['result']}, message:${result['message'].replace(/\r?\n/g, '')}`);
     } else {
       // 正しく取得できた場合に格納
@@ -207,8 +205,7 @@ router.get('/item', (req, res, next) => {
       res.header('Content-Type', contentType);
       if (err) {
         result['result'] = EL.E_RUN_DATABASE.num;
-        result['message'] = 'データベース実行時にエラーが発生しました。詳細 => ';
-        result['message'] += JSON.stringify(err);
+        result['message'] = 'データベース実行時にエラーが発生しました。詳細 => ' + JSON.stringify(err);
         systemLogger.error(`result:${result['result']}, message:${result['message'].replace(/\r?\n/g, '')}`);
       } else {
         if (docs) {
@@ -437,8 +434,7 @@ router.delete('/', (req, res) => {
     res.header('Content-Type', contentType);
     if (err) {
       result['result'] = EL.E_RUN_DATABASE.num;
-      result['message'] = 'データベース実行時にエラーが発生しました。詳細 => ';
-      result['message'] += JSON.stringify(err);
+      result['message'] = 'データベース実行時にエラーが発生しました。詳細 => ' + JSON.stringify(err);
       systemLogger.error(`result:${result['result']}, message:${result['message'].replace(/\r?\n/g, '')}`);
     }
     // 結果を返却
@@ -463,8 +459,7 @@ router.delete('/item', (req, res, next) => {
       res.header('Content-Type', contentType);
       if (err) {
         result['result'] = EL.E_RUN_DATABASE.num;
-        result['message'] = 'データベース実行時にエラーが発生しました。詳細 => ';
-        result['message'] += JSON.stringify(err);
+        result['message'] = 'データベース実行時にエラーが発生しました。詳細 => ' + JSON.stringify(err);
         systemLogger.error(`result:${result['result']}, message:${result['message'].replace(/\r?\n/g, '')}`);
       }
       // 結果を返却
